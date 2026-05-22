@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>حکم ۳بعدی</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;700;900&display=swap');
+
+  :root {
+    --gold: #c9a84c;
+    --gold-light: #f0d080;
+    --dark: #0d0a06;
+    --dark2: #1a1208;
+    --dark3: #251a0a;
+    --red: #c0392b;
+    --green: #27ae60;
+    --text: #f5e6c8;
+    --text-dim: #8a7550;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+  body {
+    font-family: 'Vazirmatn', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    height: 100dvh;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  /* ── صفحه لودینگ ── */
+  #loading {
+    position:fixed; inset:0; background:var(--dark);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    z-index:999; gap:16px;
+  }
+  .load-logo { font-size:64px; animation: pulse 1.5s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+  .load-title { font-size:28px; font-weight:900; color:var(--gold); letter-spacing:2px; }
+  .load-bar { width:200px; height:3px; background:#333; border-radius:2px; overflow:hidden; }
+  .load-fill { height:100%; background:linear-gradient(90deg,var(--gold),var(--gold-light)); border-radius:2px; animation:fill 1.8s ease forwards; }
+  @keyframes fill { from{width:0} to{width:100%} }
+
+  /* ── صفحات ── */
+  .screen { position:fixed; inset:0; display:none; flex-direction:column; }
+  .screen.active { display:flex; }
+
+  /* ── منوی اصلی ── */
+  #screen-menu {
+    background: radial-gradient(ellipse at 50% 30%, #2a1a05 0%, var(--dark) 70%);
+    align-items:center; justify-content:center; gap:0;
+  }
+  .menu-bg {
+    position:absolute; inset:0; overflow:hidden; pointer-events:none;
+  }
+  .menu-bg::before {
+    content:''; position:absolute; inset:0;
+    background: repeating-linear-gradient(
+      45deg, transparent, transparent 40px,
+      rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px
+    );
+  }
+  .menu-carpet {
+    position:absolute; bottom:0; left:0; right:0; height:45%;
+    background: linear-gradient(180deg, transparent, rgba(139,90,30,0.3));
+  }
+  .menu-content { position:relative; z-index:1; text-align:center; width:100%; padding:20px; }
+  .menu-logo { font-size:72px; margin-bottom:8px; filter:drop-shadow(0 0 20px rgba(201,168,76,0.5)); }
+  .menu-title {
+    font-size:32px; font-weight:900; color:var(--gold);
+    text-shadow: 0 0 30px rgba(201,168,76,0.4);
+    letter-spacing:3px; margin-bottom:4px;
+  }
+  .menu-subtitle { font-size:14px; color:var(--text-dim); margin-bottom:40px; }
+  .menu-btns { display:flex; flex-direction:column; gap:12px; max-width:280px; margin:0 auto; }
+  .btn-primary {
+    background: linear-gradient(135deg, #b8860b, var(--gold), #b8860b);
+    color:#1a0a00; font-family:inherit; font-size:17px; font-weight:700;
+    border:none; border-radius:14px; padding:16px 24px; cursor:pointer;
+    box-shadow: 0 4px 20px rgba(201,168,76,0.3), inset 0 1px 0 rgba(255,255,255,0.2);
+    transition: transform 0.15s, box-shadow 0.15s;
+    letter-spacing:1px;
+  }
+  .btn-primary:active { transform:scale(0.97); box-shadow:0 2px 10px rgba(201,168,76,0.2); }
+  .btn-secondary {
+    background: rgba(201,168,76,0.08); color:var(--gold);
+    font-family:inherit; font-size:16px; font-weight:600;
+    border: 1px solid rgba(201,168,76,0.25); border-radius:14px;
+    padding:14px 24px; cursor:pointer; transition:all 0.15s;
+    letter-spacing:1px;
+  }
+  .btn-secondary:active { background:rgba(201,168,76,0.15); }
+  .btn-ghost {
+    background:transparent; color:var(--text-dim);
+    font-family:inherit; font-size:14px; border:none;
+    padding:10px; cursor:pointer;
+  }
+
+  /* ── انتخاب بازی ── */
+  #screen-select {
+    background: var(--dark2);
+    padding:0;
+  }
+  .screen-header {
+    display:flex; align-items:center; gap:12px;
+    padding:16px 20px; padding-top:max(16px, env(safe-area-inset-top));
+    border-bottom:1px solid rgba(201,168,76,0.1);
+    background: rgba(0,0,0,0.3);
+  }
+  .btn-back {
+    background:rgba(201,168,76,0.1); border:none; color:var(--gold);
+    width:36px; height:36px; border-radius:10px; font-size:18px;
+    cursor:pointer; display:flex; align-items:center; justify-content:center;
+    font-family:inherit;
+  }
+  .screen-title { font-size:18px; font-weight:700; color:var(--gold); }
+  .select-body { flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:14px; }
+
+  .mode-card {
+    background: linear-gradient(135deg, var(--dark3), rgba(30,20,8,0.9));
+    border:1px solid rgba(201,168,76,0.15); border-radius:16px;
+    padding:20px; cursor:pointer; transition:all 0.2s; position:relative; overflow:hidden;
+  }
+  .mode-card:active { transform:scale(0.98); border-color:var(--gold); }
+  .mode-card::before {
+    content:''; position:absolute; top:0; right:0;
+    width:80px; height:80px;
+    background: radial-gradient(circle, rgba(201,168,76,0.08), transparent);
+  }
+  .mode-icon { font-size:36px; margin-bottom:10px; }
+  .mode-name { font-size:18px; font-weight:700; color:var(--gold); margin-bottom:4px; }
+  .mode-desc { font-size:13px; color:var(--text-dim); line-height:1.5; }
+  .mode-badge {
+    position:absolute; top:16px; left:16px;
+    background:var(--green); color:#fff; font-size:11px; font-weight:700;
+    padding:3px 8px; border-radius:6px;
+  }
+
+  /* ── انتخاب فرش ── */
+  #screen-carpet { background:var(--dark2); }
+  .carpet-grid { flex:1; overflow-y:auto; padding:16px; display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .carpet-card {
+    border-radius:14px; padding:14px; cursor:pointer;
+    transition:all 0.2s; position:relative; overflow:hidden;
+    border:2px solid transparent; aspect-ratio:1;
+    display:flex; flex-direction:column; justify-content:flex-end;
+  }
+  .carpet-card.selected { border-color:var(--gold); }
+  .carpet-card:active { transform:scale(0.96); }
+  .carpet-preview {
+    position:absolute; inset:0; border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:48px;
+  }
+  .carpet-overlay {
+    position:absolute; inset:0; border-radius:12px;
+    background:linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.8));
+  }
+  .carpet-info { position:relative; z-index:1; }
+  .carpet-name { font-size:13px; font-weight:700; color:#fff; }
+  .carpet-price { font-size:11px; color:var(--gold-light); margin-top:2px; }
+  .carpet-lock {
+    position:absolute; top:10px; left:10px; z-index:2;
+    background:rgba(0,0,0,0.6); border-radius:6px;
+    padding:3px 7px; font-size:12px;
+  }
+  .carpet-selected-mark {
+    position:absolute; top:10px; right:10px; z-index:2;
+    background:var(--gold); border-radius:50%;
+    width:22px; height:22px; display:none;
+    align-items:center; justify-content:center; font-size:13px;
+  }
+  .carpet-card.selected .carpet-selected-mark { display:flex; }
+  .carpet-footer { padding:16px; border-top:1px solid rgba(201,168,76,0.1); }
+
+  /* ── صفحه بازی ── */
+  #screen-game { background:#000; position:relative; }
+  #game-canvas { position:absolute; inset:0; width:100%; height:100%; }
+
+  /* HUD بالا */
+  .hud-top {
+    position:absolute; top:0; left:0; right:0; z-index:10;
+    padding:12px 16px; padding-top:max(12px, env(safe-area-inset-top));
+    display:flex; align-items:center; justify-content:space-between;
+    background:linear-gradient(180deg, rgba(0,0,0,0.7), transparent);
+  }
+  .hud-trump {
+    background:rgba(0,0,0,0.5); border:1px solid rgba(201,168,76,0.3);
+    border-radius:10px; padding:6px 12px; font-size:14px; font-weight:700; color:var(--gold);
+    backdrop-filter:blur(8px);
+  }
+  .hud-score {
+    display:flex; gap:8px;
+  }
+  .score-chip {
+    background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.1);
+    border-radius:8px; padding:5px 10px; font-size:12px; color:var(--text);
+    backdrop-filter:blur(8px); text-align:center;
+  }
+  .score-chip span { display:block; font-size:16px; font-weight:700; color:var(--gold); }
+  .hud-leave {
+    background:rgba(192,57,43,0.3); border:1px solid rgba(192,57,43,0.4);
+    border-radius:8px; padding:6px 10px; font-size:12px; color:#ff6b6b;
+    cursor:pointer; font-family:inherit;
+  }
+
+  /* پیام وسط */
+  .game-message {
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    z-index:20; text-align:center; pointer-events:none;
+    background:rgba(0,0,0,0.7); border:1px solid rgba(201,168,76,0.3);
+    border-radius:16px; padding:16px 24px; backdrop-filter:blur(10px);
+    max-width:80vw;
+  }
+  .game-message.hidden { display:none; }
+  .msg-title { font-size:16px; font-weight:700; color:var(--gold); margin-bottom:4px; }
+  .msg-body { font-size:13px; color:var(--text-dim); }
+
+  /* انتخاب حکم */
+  #trump-picker {
+    position:absolute; bottom:180px; left:50%; transform:translateX(-50%);
+    z-index:20; display:flex; gap:10px;
+  }
+  #trump-picker.hidden { display:none; }
+  .trump-btn {
+    background:rgba(0,0,0,0.8); border:2px solid rgba(201,168,76,0.4);
+    border-radius:14px; padding:12px 16px; font-size:24px; cursor:pointer;
+    backdrop-filter:blur(10px); transition:all 0.2s; display:flex; flex-direction:column; align-items:center; gap:4px;
+  }
+  .trump-btn span { font-size:11px; color:var(--text-dim); font-family:'Vazirmatn',sans-serif; }
+  .trump-btn:active { transform:scale(0.92); border-color:var(--gold); background:rgba(201,168,76,0.2); }
+  .trump-btn.red { border-color:rgba(192,57,43,0.5); }
+  .trump-btn.red:active { border-color:var(--red); }
+
+  /* دست بازیکن */
+  #hand-area {
+    position:absolute; bottom:0; left:0; right:0; z-index:15;
+    padding:8px 8px 16px;
+    background:linear-gradient(0deg, rgba(0,0,0,0.85) 60%, transparent);
+  }
+  .hand-label {
+    text-align:center; font-size:11px; color:var(--text-dim);
+    margin-bottom:6px; letter-spacing:1px;
+  }
+  .hand-cards {
+    display:flex; justify-content:center; align-items:flex-end;
+    gap:-8px; padding:0 8px; overflow-x:auto; overflow-y:visible;
+    scrollbar-width:none; padding-bottom:4px;
+  }
+  .hand-cards::-webkit-scrollbar { display:none; }
+
+  .card {
+    flex-shrink:0; width:52px; height:76px; border-radius:8px;
+    background:#fff; border:2px solid #ddd;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    cursor:pointer; transition:transform 0.2s, box-shadow 0.2s;
+    position:relative; margin:0 -4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    font-family:'Vazirmatn',sans-serif;
+  }
+  .card:active, .card.selected { transform:translateY(-16px) !important; box-shadow:0 8px 24px rgba(0,0,0,0.6); }
+  .card.invalid { opacity:0.45; filter:grayscale(0.5); cursor:not-allowed; }
+  .card.played { animation: playCard 0.3s ease forwards; }
+  @keyframes playCard { to { transform:translateY(-40px) scale(0.8); opacity:0; } }
+
+  .card-rank { font-size:16px; font-weight:700; line-height:1; }
+  .card-suit { font-size:20px; line-height:1; margin-top:2px; }
+  .card.red .card-rank, .card.red .card-suit { color:#c0392b; }
+  .card.black .card-rank, .card.black .card-suit { color:#1a1a2e; }
+
+  /* اعلان */
+  .toast {
+    position:fixed; top:80px; left:50%; transform:translateX(-50%);
+    background:rgba(0,0,0,0.85); border:1px solid rgba(201,168,76,0.3);
+    border-radius:12px; padding:10px 20px; font-size:14px; color:var(--text);
+    z-index:100; backdrop-filter:blur(10px); white-space:nowrap;
+    animation: toastIn 0.3s ease, toastOut 0.3s ease 2s forwards;
+    pointer-events:none;
+  }
+  @keyframes toastIn { from{opacity:0;transform:translateX(-50%) translateY(-10px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
+  @keyframes toastOut { to{opacity:0;transform:translateX(-50%) translateY(-10px)} }
+
+  /* پایان بازی */
+  #screen-end {
+    background:radial-gradient(ellipse at 50% 40%, #1a1000, var(--dark));
+    align-items:center; justify-content:center; text-align:center; padding:32px;
+  }
+  .end-icon { font-size:80px; margin-bottom:16px; animation: bounce 0.6s ease; }
+  @keyframes bounce { 0%,100%{transform:scale(1)} 50%{transform:scale(1.2)} }
+  .end-title { font-size:28px; font-weight:900; color:var(--gold); margin-bottom:8px; }
+  .end-sub { font-size:15px; color:var(--text-dim); margin-bottom:32px; line-height:1.6; }
+  .end-btns { display:flex; flex-direction:column; gap:12px; width:100%; max-width:260px; }
+
+  /* آمار بازیکنان (کنار میز) */
+  .player-hud {
+    position:absolute; z-index:12;
+    background:rgba(0,0,0,0.55); border:1px solid rgba(255,255,255,0.1);
+    border-radius:10px; padding:6px 10px; backdrop-filter:blur(6px);
+    text-align:center; pointer-events:none;
+  }
+  .player-hud .ph-name { font-size:11px; color:var(--text-dim); }
+  .player-hud .ph-cards { font-size:13px; font-weight:700; color:var(--text); }
+  .player-hud .ph-turn { font-size:10px; color:var(--gold); }
+  .player-hud.is-turn { border-color:rgba(201,168,76,0.5); }
+  #hud-top-player { top:90px; left:50%; transform:translateX(-50%); }
+  #hud-left-player { top:50%; left:10px; transform:translateY(-50%); }
+  #hud-right-player { top:50%; right:10px; transform:translateY(-50%); }
+</style>
+</head>
+<body>
+
+<!-- لودینگ -->
+<div id="loading">
+  <div class="load-logo">🎴</div>
+  <div class="load-title">حکم ۳بعدی</div>
+  <div class="load-bar"><div class="load-fill"></div></div>
+</div>
+
+<!-- منوی اصلی -->
+<div id="screen-menu" class="screen">
+  <div class="menu-bg"></div>
+  <div class="menu-carpet"></div>
+  <div class="menu-content">
+    <div class="menu-logo">🎴</div>
+    <div class="menu-title">حکم ۳بعدی</div>
+    <div class="menu-subtitle">بازی کارت ایرانی — نسخه سه‌بعدی</div>
+    <div class="menu-btns">
+      <button class="btn-primary" onclick="showScreen('select')">🎮 شروع بازی</button>
+      <button class="btn-secondary" onclick="showScreen('carpet')">🪄 انتخاب فرش</button>
+      <button class="btn-ghost" onclick="showHelp()">راهنمای بازی ❓</button>
+    </div>
+  </div>
+</div>
+
+<!-- انتخاب حالت -->
+<div id="screen-select" class="screen">
+  <div class="screen-header">
+    <button class="btn-back" onclick="showScreen('menu')">←</button>
+    <div class="screen-title">انتخاب بازی</div>
+  </div>
+  <div class="select-body">
+    <div class="mode-card" onclick="startGame(2)">
+      <div class="mode-badge">رایگان</div>
+      <div class="mode-icon">⚔️</div>
+      <div class="mode-name">۲ نفره</div>
+      <div class="mode-desc">شما در مقابل یک هوش مصنوعی قوی — سریع و هیجان‌انگیز</div>
+    </div>
+    <div class="mode-card" onclick="startGame(4)">
+      <div class="mode-badge">رایگان</div>
+      <div class="mode-icon">👥</div>
+      <div class="mode-name">۴ نفره تیمی</div>
+      <div class="mode-desc">شما + AI هم‌تیمی در مقابل ۲ هوش مصنوعی — بازی تیمی کلاسیک</div>
+    </div>
+  </div>
+</div>
+
+<!-- انتخاب فرش -->
+<div id="screen-carpet" class="screen">
+  <div class="screen-header">
+    <button class="btn-back" onclick="showScreen('menu')">←</button>
+    <div class="screen-title">فرش‌های ایرانی</div>
+  </div>
+  <div class="carpet-grid" id="carpet-grid"></div>
+  <div class="carpet-footer">
+    <button class="btn-primary" style="width:100%" onclick="saveCarpet()">✅ انتخاب فرش</button>
+  </div>
+</div>
+
+<!-- بازی -->
+<div id="screen-game" class="screen">
+  <canvas id="game-canvas"></canvas>
+
+  <!-- HUD بالا -->
+  <div class="hud-top">
+    <div class="hud-trump" id="hud-trump">حکم: —</div>
+    <div class="hud-score">
+      <div class="score-chip">شما<span id="score-me">0</span></div>
+      <div class="score-chip">حریف<span id="score-opp">0</span></div>
+    </div>
+    <button class="hud-leave" onclick="confirmLeave()">خروج</button>
+  </div>
+
+  <!-- آمار بازیکنان کنار میز -->
+  <div class="player-hud" id="hud-top-player">
+    <div class="ph-name" id="ph-top-name">—</div>
+    <div class="ph-cards" id="ph-top-cards">🂠 13</div>
+    <div class="ph-turn" id="ph-top-turn"></div>
+  </div>
+  <div class="player-hud" id="hud-left-player" style="display:none">
+    <div class="ph-name" id="ph-left-name">—</div>
+    <div class="ph-cards" id="ph-left-cards">🂠 13</div>
+    <div class="ph-turn" id="ph-left-turn"></div>
+  </div>
+  <div class="player-hud" id="hud-right-player" style="display:none">
+    <div class="ph-name" id="ph-right-name">—</div>
+    <div class="ph-cards" id="ph-right-cards">🂠 13</div>
+    <div class="ph-turn" id="ph-right-turn"></div>
+  </div>
+
+  <!-- پیام مرکزی -->
+  <div class="game-message hidden" id="game-msg">
+    <div class="msg-title" id="msg-title">صبر کنید...</div>
+    <div class="msg-body" id="msg-body"></div>
+  </div>
+
+  <!-- انتخاب حکم -->
+  <div id="trump-picker" class="hidden">
+    <button class="trump-btn" onclick="pickTrump('♠')">♠<span>پیک</span></button>
+    <button class="trump-btn red" onclick="pickTrump('♥')">♥<span>دل</span></button>
+    <button class="trump-btn red" onclick="pickTrump('♦')">♦<span>خشت</span></button>
+    <button class="trump-btn" onclick="pickTrump('♣')">♣<span>گشنیز</span></button>
+  </div>
+
+  <!-- دست بازیکن -->
+  <div id="hand-area">
+    <div class="hand-label">دست شما — کارتی را انتخاب کنید</div>
+    <div class="hand-cards" id="hand-cards"></div>
+  </div>
+</div>
+
+<!-- پایان بازی -->
+<div id="screen-end" class="screen">
+  <div class="end-icon" id="end-icon">🏆</div>
+  <div class="end-title" id="end-title">بردید!</div>
+  <div class="end-sub" id="end-sub"></div>
+  <div class="end-btns">
+    <button class="btn-primary" onclick="startGame(window.lastMode||4)">🔄 بازی مجدد</button>
+    <button class="btn-secondary" onclick="showScreen('menu')">🏠 منوی اصلی</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  تنظیمات تلگرام
+// ══════════════════════════════════════════════════════
+const tg = window.Telegram?.WebApp;
+if (tg) { tg.ready(); tg.expand(); }
+
+// ══════════════════════════════════════════════════════
+//  داده‌های فرش و اتاق
+// ══════════════════════════════════════════════════════
+const CARPETS = [
+  { id:'tabriz',   name:'تبریز کلاسیک', emoji:'🟥', free:true,  price:0,   colors:['#8B0000','#8B6914','#1a0a00'], roomBg:'#2a0a05', roomWall:'#5c3317' },
+  { id:'isfahan',  name:'اصفهان آبی',   emoji:'🔵', free:true,  price:0,   colors:['#003366','#8B6914','#1a2a4a'], roomBg:'#020a1a', roomWall:'#0a2244' },
+  { id:'kashan',   name:'کاشان گل سرخ', emoji:'🌹', free:false, price:0.2, colors:['#C41E3A','#2D5016','#8B0000'], roomBg:'#0a0205', roomWall:'#3d0a10' },
+  { id:'heriz',    name:'هریس قبیله‌ای', emoji:'🏺', free:false, price:0.3, colors:['#8B4513','#FF6B35','#2F4F2F'], roomBg:'#0d0804', roomWall:'#3d2010' },
+  { id:'nain',     name:'نایین عاج',    emoji:'🕊️', free:false, price:0.4, colors:['#FAEBD7','#8B7355','#4A4A8A'], roomBg:'#0a0a10', roomWall:'#2a2a40' },
+  { id:'qom',      name:'قم ابریشم',    emoji:'✨', free:false, price:0.5, colors:['#6A0DAD','#FFD700','#3a0060'], roomBg:'#0a0015', roomWall:'#2d0060' },
+  { id:'kerman',   name:'کرمان بهشت',   emoji:'🌺', free:false, price:1.0, colors:['#228B22','#FF1493','#006400'], roomBg:'#020a02', roomWall:'#0a2d0a' },
+  { id:'mashhad',  name:'مشهد شاهانه',  emoji:'👑', free:false, price:2.0, colors:['#800000','#FFD700','#1C1C1C'], roomBg:'#0a0000', roomWall:'#2d0000' },
+];
+
+let selectedCarpet = CARPETS[0];
+let activeCarpet   = CARPETS[0];
+
+// ══════════════════════════════════════════════════════
+//  منطق بازی حکم
+// ══════════════════════════════════════════════════════
+const SUITS  = ['♠','♥','♦','♣'];
+const RANKS  = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+const RANK_V = Object.fromEntries(RANKS.map((r,i)=>[r,i]));
+const RED_SUITS = new Set(['♥','♦']);
+
+const AI_NAMES = ['علی','سارا','رضا','مریم','حسین','نازنین','امیر','فاطمه'];
+
+let G = {}; // وضعیت بازی
+
+function makeDeck() {
+  const d=[];
+  for(const s of SUITS) for(const r of RANKS) d.push({s,r});
+  return d;
+}
+
+function shuffle(arr) {
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+
+function sortHand(hand, trump) {
+  return [...hand].sort((a,b)=>{
+    const sa = a.s===trump ? -1 : SUITS.indexOf(a.s);
+    const sb = b.s===trump ? -1 : SUITS.indexOf(b.s);
+    if(sa!==sb) return sa-sb;
+    return RANK_V[b.r]-RANK_V[a.r];
+  });
+}
+
+function validCards(hand, leadSuit, trump) {
+  if(!leadSuit) return hand;
+  const follow = hand.filter(c=>c.s===leadSuit);
+  return follow.length ? follow : hand;
+}
+
+function trickWinner(trick, trump) {
+  let best=null, bestVal=-1, wasTrump=false;
+  for(const {pIdx,card} of trick) {
+    const isTrump = card.s===trump;
+    const val = RANK_V[card.r];
+    if(!best || (isTrump&&!wasTrump) || (isTrump&&wasTrump&&val>bestVal) ||
+       (!isTrump&&!wasTrump&&card.s===trick[0].card.s&&val>bestVal)) {
+      best=pIdx; bestVal=val; wasTrump=isTrump;
+    }
+  }
+  return best;
+}
+
+// ── هوش مصنوعی ─────────────────────────────────────────
+function aiChooseCard(hand, trick, trump, playedCards, mode) {
+  const leadSuit = trick.length ? trick[0].card.s : null;
+  const valid    = validCards(hand, leadSuit, trump);
+
+  // حالت پیشرفته: ببینیم میتونیم ببریم یا نه
+  if(trick.length > 0) {
+    const winnerNow = trickWinner(trick, trump);
+    const isWinning = (winnerNow === trick[0].pIdx); // آیا اولین کارت داره میبره؟
+
+    // اگه داریم میبریم → کمترین کارت ممکن
+    const trumpsInHand = valid.filter(c=>c.s===trump);
+    const leadInHand   = valid.filter(c=>c.s===leadSuit);
+
+    if(isWinning && leadSuit) {
+      // بازنده داریم → کمترین کارت بذار
+      if(leadInHand.length) return leadInHand.reduce((a,b)=>RANK_V[a.r]<RANK_V[b.r]?a:b);
+    }
+
+    // سعی کن ببری
+    const canBeat = valid.filter(c=>{
+      const testTrick=[...trick,{pIdx:0,card:c}];
+      return trickWinner(testTrick,trump)===0;
+    });
+    if(canBeat.length) return canBeat.reduce((a,b)=>RANK_V[a.r]<RANK_V[b.r]?a:b);
+
+    // نمیتونی ببری → کمترین کارت
+    return valid.reduce((a,b)=>RANK_V[a.r]<RANK_V[b.r]?a:b);
+  }
+
+  // شروع شاخ — ترجیح: کارت قوی حکم یا کارت قوی رنگ اصلی
+  const trumps = valid.filter(c=>c.s===trump);
+  if(trumps.length > 2) {
+    // حکم زیاد داری → با قوی‌ترین شروع کن
+    if(Math.random()<0.4) return trumps.reduce((a,b)=>RANK_V[a.r]>RANK_V[b.r]?a:b);
+  }
+  // رنگ با بیشترین کارت
+  const suitCount={};
+  for(const c of valid) suitCount[c.s]=(suitCount[c.s]||0)+1;
+  const bestSuit=Object.entries(suitCount).sort((a,b)=>b[1]-a[1])[0][0];
+  const bestSuitCards = valid.filter(c=>c.s===bestSuit);
+  return bestSuitCards.reduce((a,b)=>RANK_V[a.r]>RANK_V[b.r]?a:b);
+}
+
+function aiChooseTrump(hand) {
+  // بیشترین رنگ رو حکم انتخاب کن
+  const count={};
+  for(const c of hand) count[c.s]=(count[c.s]||0)+1;
+  return Object.entries(count).sort((a,b)=>b[1]-a[1])[0][0];
+}
+
+// ══════════════════════════════════════════════════════
+//  مدیریت صفحات
+// ══════════════════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  if(id==='carpet') renderCarpetGrid();
+}
+
+function showToast(msg, dur=2500) {
+  document.querySelectorAll('.toast').forEach(t=>t.remove());
+  const t=document.createElement('div');
+  t.className='toast'; t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(), dur+300);
+}
+
+function showHelp() {
+  showToast('هدف: ۷ شاخ از ۱۳ در حالت ۴ نفره، یا بیشترین شاخ در ۲ نفره', 4000);
+}
+
+function confirmLeave() {
+  if(confirm('از بازی خارج می‌شوید؟')) { showScreen('menu'); destroyThree(); }
+}
+
+// ══════════════════════════════════════════════════════
+//  فرش
+// ══════════════════════════════════════════════════════
+function renderCarpetGrid() {
+  const grid = document.getElementById('carpet-grid');
+  grid.innerHTML = CARPETS.map(c=>`
+    <div class="carpet-card ${c.id===selectedCarpet.id?'selected':''}"
+         onclick="selectCarpet('${c.id}')"
+         style="background:linear-gradient(135deg,${c.colors[0]},${c.colors[2]})">
+      <div class="carpet-preview">${c.emoji}</div>
+      <div class="carpet-overlay"></div>
+      ${!c.free?`<div class="carpet-lock">🔒 ${c.price} TON</div>`:''}
+      <div class="carpet-selected-mark">✓</div>
+      <div class="carpet-info">
+        <div class="carpet-name">${c.name}</div>
+        <div class="carpet-price">${c.free?'رایگان':c.price+' TON'}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function selectCarpet(id) {
+  const c = CARPETS.find(x=>x.id===id);
+  if(!c.free) { showToast('🔒 این فرش نیاز به خرید دارد — به زودی!'); return; }
+  selectedCarpet = c;
+  renderCarpetGrid();
+}
+
+function saveCarpet() {
+  activeCarpet = selectedCarpet;
+  showToast('✅ فرش '+activeCarpet.name+' انتخاب شد');
+  showScreen('menu');
+}
+
+// ══════════════════════════════════════════════════════
+//  Three.js — محیط ۳D
+// ══════════════════════════════════════════════════════
+let threeCtx = null;
+
+function initThree(carpet) {
+  if(threeCtx) destroyThree();
+  const canvas = document.getElementById('game-canvas');
+  const W=canvas.clientWidth, H=canvas.clientHeight;
+  const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:false});
+  renderer.setSize(W,H); renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.shadowMap.enabled=true;
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(carpet.roomBg);
+  scene.fog = new THREE.FogExp2(carpet.roomBg, 0.08);
+
+  const camera = new THREE.PerspectiveCamera(65, W/H, 0.1, 100);
+  camera.position.set(0, 1.6, 2.8);
+  camera.lookAt(0, 0.8, 0);
+
+  // نور
+  const ambient = new THREE.AmbientLight(0xffeedd, 0.5);
+  scene.add(ambient);
+  const pointLight = new THREE.PointLight(0xffd090, 2, 15);
+  pointLight.position.set(0, 4, 0);
+  pointLight.castShadow = true;
+  scene.add(pointLight);
+  const fillLight = new THREE.PointLight(new THREE.Color(carpet.roomWall), 0.8, 8);
+  fillLight.position.set(-3, 2, 0);
+  scene.add(fillLight);
+
+  // کف
+  const floorGeo = new THREE.PlaneGeometry(12, 12);
+  const floorMat = new THREE.MeshLambertMaterial({color:new THREE.Color(carpet.colors[2])});
+  const floor = new THREE.Mesh(floorGeo, floorMat);
+  floor.rotation.x=-Math.PI/2; floor.receiveShadow=true;
+  scene.add(floor);
+
+  // فرش روی کف
+  const carpetGeo = new THREE.PlaneGeometry(3.5, 3.5);
+  const carpetMat = new THREE.MeshLambertMaterial({color:new THREE.Color(carpet.colors[0])});
+  const carpetMesh = new THREE.Mesh(carpetGeo, carpetMat);
+  carpetMesh.rotation.x=-Math.PI/2; carpetMesh.position.y=0.002;
+  scene.add(carpetMesh);
+  // نقوش فرش
+  const borderGeo = new THREE.PlaneGeometry(3.2, 3.2);
+  const borderMat = new THREE.MeshLambertMaterial({color:new THREE.Color(carpet.colors[1])});
+  const borderMesh = new THREE.Mesh(borderGeo, borderMat);
+  borderMesh.rotation.x=-Math.PI/2; borderMesh.position.y=0.003;
+  scene.add(borderMesh);
+  const innerGeo = new THREE.PlaneGeometry(2.6, 2.6);
+  const innerMat = new THREE.MeshLambertMaterial({color:new THREE.Color(carpet.colors[0])});
+  const innerMesh = new THREE.Mesh(innerGeo, innerMat);
+  innerMesh.rotation.x=-Math.PI/2; innerMesh.position.y=0.004;
+  scene.add(innerMesh);
+
+  // میز
+  const tableGeo = new THREE.CylinderGeometry(1.2, 1.1, 0.08, 32);
+  const tableMat = new THREE.MeshLambertMaterial({color:0x3d2008});
+  const table = new THREE.Mesh(tableGeo, tableMat);
+  table.position.set(0,0.75,0); table.castShadow=true; table.receiveShadow=true;
+  scene.add(table);
+  // رویه میز
+  const topGeo = new THREE.CylinderGeometry(1.18, 1.18, 0.02, 32);
+  const topMat = new THREE.MeshLambertMaterial({color:0x1a4a1a});
+  const top = new THREE.Mesh(topGeo, topMat);
+  top.position.set(0,0.80,0);
+  scene.add(top);
+
+  // پایه میز
+  const legGeo = new THREE.CylinderGeometry(0.06, 0.08, 0.75, 8);
+  const legMat = new THREE.MeshLambertMaterial({color:0x2a1004});
+  for(let i=0;i<4;i++){
+    const leg=new THREE.Mesh(legGeo,legMat);
+    const a=i*Math.PI/2+Math.PI/4;
+    leg.position.set(Math.cos(a)*0.8, 0.375, Math.sin(a)*0.8);
+    scene.add(leg);
+  }
+
+  // دیوارها
+  const wallMat = new THREE.MeshLambertMaterial({color:new THREE.Color(carpet.roomWall), side:THREE.BackSide});
+  const room = new THREE.Mesh(new THREE.BoxGeometry(12,6,12), wallMat);
+  room.position.y=3; scene.add(room);
+
+  // آدمک‌ها (بر اساس تعداد بازیکن)
+  const avatarPositions = G.mode===4
+    ? [{x:0,z:-1.8},{x:-1.8,z:0},{x:1.8,z:0}]
+    : [{x:0,z:-1.8}];
+
+  const avatarNames = G.players.slice(1).map(p=>p.name);
+  avatarPositions.forEach((pos,i)=>{
+    const group = new THREE.Group();
+    // سر
+    const head=new THREE.Mesh(new THREE.SphereGeometry(0.15,12,12),
+      new THREE.MeshLambertMaterial({color:0xffcba4}));
+    head.position.y=1.6; group.add(head);
+    // بدن
+    const body=new THREE.Mesh(new THREE.CylinderGeometry(0.12,0.15,0.5,8),
+      new THREE.MeshLambertMaterial({color:0x2244aa}));
+    body.position.y=1.2; group.add(body);
+    // پاها
+    [-.08,.08].forEach(dx=>{
+      const leg=new THREE.Mesh(new THREE.CylinderGeometry(0.055,0.05,0.5,8),
+        new THREE.MeshLambertMaterial({color:0x1a1a2e}));
+      leg.position.set(dx,0.7,0); group.add(leg);
+    });
+    group.position.set(pos.x,0,pos.z);
+    group.lookAt(0,1,0);
+    scene.add(group);
+    // اسم بالای سر
+    threeCtx && void 0; // placeholder برای sprite text
+  });
+
+  let animId;
+  let t=0;
+  function animate(){
+    animId=requestAnimationFrame(animate);
+    t+=0.01;
+    pointLight.intensity = 1.8+Math.sin(t)*0.2;
+    // کمی تاب دوربین
+    camera.position.x = Math.sin(t*0.2)*0.05;
+    renderer.render(scene,camera);
+  }
+  animate();
+
+  window.addEventListener('resize',()=>{
+    const W=canvas.clientWidth,H=canvas.clientHeight;
+    renderer.setSize(W,H);
+    camera.aspect=W/H; camera.updateProjectionMatrix();
+  });
+
+  threeCtx={renderer,scene,camera,animId};
+}
+
+function destroyThree() {
+  if(!threeCtx) return;
+  cancelAnimationFrame(threeCtx.animId);
+  threeCtx.renderer.dispose();
+  threeCtx=null;
+}
+
+// ══════════════════════════════════════════════════════
+//  منطق اصلی بازی
+// ══════════════════════════════════════════════════════
+window.lastMode=4;
+
+function startGame(mode) {
+  window.lastMode=mode;
+  showScreen('game');
+  initGame(mode);
+}
+
+function initGame(mode) {
+  const carpet = activeCarpet;
+
+  // بازیکنان
+  const aiPool = shuffle([...AI_NAMES]);
+  const players = [{name: tg?.initDataUnsafe?.user?.first_name || 'شما', isHuman:true, team:0}];
+  for(let i=1;i<mode;i++) {
+    players.push({name:aiPool[i-1], isHuman:false, team: mode===4 ? i%2 : i});
+  }
+
+  // دست‌ها
+  const deck = shuffle(makeDeck());
+  const perPlayer = mode===4 ? 13 : 26;
+  players.forEach((p,i)=>{ p.hand=deck.slice(i*perPlayer,(i+1)*perPlayer); p.tricks=0; });
+
+  G = {
+    mode, players, trump:null,
+    hakemIdx:0, currentTurn:0,
+    trick:[], playedCards:[],
+    gameScore:[0,0], roundScore:[0,0],
+    state:'hokm_pick', carpet
+  };
+
+  // UI آدمک‌ها
+  setupPlayerHuds(mode, players);
+
+  // Three.js
+  initThree(carpet);
+
+  // انتخاب حکم
+  if(G.players[G.hakemIdx].isHuman) {
+    showMessage('شما حاکم هستید!', 'حکم بازی را انتخاب کنید');
+    showTrumpPicker(true);
+  } else {
+    showMessage(G.players[G.hakemIdx].name+' حاکم است', 'در حال انتخاب حکم...');
+    setTimeout(()=>{
+      const t=aiChooseTrump(G.players[G.hakemIdx].hand);
+      setTrump(t);
+    },1200);
+  }
+  renderHand();
+}
+
+function setupPlayerHuds(mode, players) {
+  const topEl  = document.getElementById('hud-top-player');
+  const leftEl = document.getElementById('hud-left-player');
+  const rightEl= document.getElementById('hud-right-player');
+
+  topEl.style.display='block';
+  leftEl.style.display='none';
+  rightEl.style.display='none';
+
+  document.getElementById('ph-top-name').textContent = players[1]?.name||'';
+  document.getElementById('ph-top-cards').textContent = '🂠 '+players[1]?.hand?.length;
+
+  if(mode===4) {
+    leftEl.style.display='block';
+    rightEl.style.display='block';
+    document.getElementById('ph-left-name').textContent  = players[2]?.name||'';
+    document.getElementById('ph-right-name').textContent = players[3]?.name||'';
+    document.getElementById('ph-left-cards').textContent  = '🂠 '+(players[2]?.hand?.length||0);
+    document.getElementById('ph-right-cards').textContent = '🂠 '+(players[3]?.hand?.length||0);
+  }
+}
+
+function updatePlayerHuds() {
+  const p=G.players;
+  document.getElementById('ph-top-cards').textContent='🂠 '+p[1].hand.length;
+  document.getElementById('ph-top-turn').textContent  = G.currentTurn===1?'← نوبت':'';
+  if(G.mode===4){
+    document.getElementById('ph-left-cards').textContent='🂠 '+p[2].hand.length;
+    document.getElementById('ph-right-cards').textContent='🂠 '+p[3].hand.length;
+    document.getElementById('ph-left-turn').textContent = G.currentTurn===2?'← نوبت':'';
+    document.getElementById('ph-right-turn').textContent= G.currentTurn===3?'← نوبت':'';
+  }
+}
+
+function showMessage(title, body) {
+  document.getElementById('game-msg').classList.remove('hidden');
+  document.getElementById('msg-title').textContent=title;
+  document.getElementById('msg-body').textContent=body||'';
+}
+function hideMessage() { document.getElementById('game-msg').classList.add('hidden'); }
+
+function showTrumpPicker(show) {
+  document.getElementById('trump-picker').classList.toggle('hidden',!show);
+}
+
+function pickTrump(suit) {
+  showTrumpPicker(false);
+  setTrump(suit);
+}
+
+function setTrump(suit) {
+  G.trump=suit;
+  G.players.forEach(p=>{ p.hand=sortHand(p.hand,suit); });
+  document.getElementById('hud-trump').textContent='حکم: '+suit;
+  const hakemName = G.players[G.hakemIdx].name;
+  showMessage('حکم: '+suit, hakemName+' حاکم است');
+  setTimeout(()=>{
+    hideMessage();
+    G.state='playing';
+    G.currentTurn=G.hakemIdx;
+    renderHand();
+    updateTurnUI();
+    if(!G.players[G.currentTurn].isHuman) scheduleAI();
+  },1000);
+}
+
+// ── کارت‌های دست ─────────────────────────────────────
+function renderHand() {
+  const container = document.getElementById('hand-cards');
+  const player    = G.players[0];
+  const lead      = G.trick.length ? G.trick[0].card.s : null;
+  const valid     = new Set(validCards(player.hand, lead, G.trump).map(c=>c.s+c.r));
+
+  container.innerHTML = '';
+  const n=player.hand.length;
+  player.hand.forEach((card,i)=>{
+    const isRed = RED_SUITS.has(card.s);
+    const isValid = valid.has(card.s+card.r);
+    const div=document.createElement('div');
+    div.className='card '+(isRed?'red':'black')+(isValid?'':' invalid');
+
+    // کمی arc
+    const angle = n>1 ? (i-(n-1)/2)*3 : 0;
+    const yOff  = n>1 ? Math.abs(i-(n-1)/2)*2 : 0;
+    div.style.transform=`rotate(${angle}deg) translateY(${yOff}px)`;
+    div.style.zIndex=i;
+
+    div.innerHTML=`<div class="card-rank">${card.r}</div><div class="card-suit">${card.s}</div>`;
+    if(isValid && G.state==='playing' && G.currentTurn===0) {
+      div.onclick=()=>playCard(0,i);
+    }
+    container.appendChild(div);
+  });
+
+  // امتیاز
+  document.getElementById('score-me').textContent  = G.roundScore[0];
+  document.getElementById('score-opp').textContent = G.roundScore[1];
+}
+
+function updateTurnUI() {
+  const isMyTurn = G.currentTurn===0 && G.state==='playing';
+  document.querySelector('.hand-label').textContent =
+    isMyTurn ? 'نوبت شماست — کارت انتخاب کنید' : 'صبر کنید...';
+  updatePlayerHuds();
+}
+
+// ── بازی کارت ────────────────────────────────────────
+function playCard(pIdx, cardIdx) {
+  if(G.state!=='playing' || G.currentTurn!==pIdx) return;
+  const player=G.players[pIdx];
+  const lead=G.trick.length?G.trick[0].card.s:null;
+  const valid=validCards(player.hand,lead,G.trump);
+  const card=player.hand[cardIdx];
+  if(!valid.find(c=>c.s===card.s&&c.r===card.r)) {
+    showToast('این کارت را نمی‌توانید بازی کنید');
+    return;
+  }
+  player.hand.splice(cardIdx,1);
+  G.trick.push({pIdx,card});
+  G.playedCards.push(card);
+
+  renderHand();
+  updateTurnUI();
+
+  if(G.trick.length===G.players.length) {
+    finishTrick();
+  } else {
+    G.currentTurn=(G.currentTurn+1)%G.players.length;
+    updateTurnUI();
+    if(!G.players[G.currentTurn].isHuman) scheduleAI();
+  }
+}
+
+function scheduleAI(delay=800) {
+  setTimeout(()=>{
+    if(G.state!=='playing') return;
+    const p=G.players[G.currentTurn];
+    if(p.isHuman) return;
+    const card=aiChooseCard(p.hand,G.trick,G.trump,G.playedCards,G.mode);
+    const idx=p.hand.findIndex(c=>c.s===card.s&&c.r===card.r);
+    playCard(G.currentTurn,idx);
+  },delay);
+}
+
+function finishTrick() {
+  const winnerIdx=trickWinner(G.trick,G.trump);
+  const winner=G.players[winnerIdx];
+  winner.tricks++;
+  const team=winner.team;
+  G.roundScore[team]++;
+  G.trick=[];
+  G.currentTurn=winnerIdx;
+
+  showToast(winner.name+' این شاخ را برد! 🎉');
+  setTimeout(()=>{
+    renderHand();
+    updatePlayerHuds();
+
+    if(G.players[0].hand.length===0) {
+      finishRound();
+    } else {
+      updateTurnUI();
+      if(!G.players[G.currentTurn].isHuman) scheduleAI(1000);
+    }
+  },600);
+}
+
+function finishRound() {
+  const rs=G.roundScore;
+  const target=G.mode===4?7:14;
+  const myTeam=0, oppTeam=1;
+
+  let msg='';
+  if(rs[myTeam]>=target) {
+    G.gameScore[myTeam]++;
+    msg=`✅ شما بردید! (${rs[myTeam]}-${rs[oppTeam]})`;
+  } else {
+    G.gameScore[oppTeam]+= rs[oppTeam]>=(target*2) ? 2 : 1;
+    msg=`❌ حریف برد (${rs[myTeam]}-${rs[oppTeam]})`;
+  }
+  showToast(msg, 3000);
+
+  setTimeout(()=>{
+    if(Math.max(...G.gameScore)>=7) {
+      endGame();
+    } else {
+      // راند جدید
+      G.roundScore=[0,0];
+      G.hakemIdx=(G.hakemIdx+1)%G.players.length;
+      const deck=shuffle(makeDeck());
+      const per=G.mode===4?13:26;
+      G.players.forEach((p,i)=>{ p.hand=deck.slice(i*per,(i+1)*per); p.tricks=0; });
+      G.trick=[];
+      G.state='hokm_pick';
+      G.currentTurn=G.hakemIdx;
+
+      setupPlayerHuds(G.mode,G.players);
+      renderHand();
+
+      if(G.players[G.hakemIdx].isHuman) {
+        showMessage('شما حاکم هستید!','حکم بازی را انتخاب کنید');
+        showTrumpPicker(true);
+      } else {
+        showMessage(G.players[G.hakemIdx].name+' حاکم است','در حال انتخاب حکم...');
+        setTimeout(()=>setTrump(aiChooseTrump(G.players[G.hakemIdx].hand)),1200);
+      }
+    }
+  },2500);
+}
+
+function endGame() {
+  destroyThree();
+  const won = G.gameScore[0]>=7;
+  document.getElementById('end-icon').textContent   = won?'🏆':'😔';
+  document.getElementById('end-title').textContent  = won?'بردید!':'باختید!';
+  document.getElementById('end-sub').textContent    =
+    `امتیاز: شما ${G.gameScore[0]} — حریف ${G.gameScore[1]}\n` +
+    (won ? 'آفرین! هوش مصنوعی را شکست دادید 💪' : 'دفعه بعد بهتر می‌شود 🌟');
+  showScreen('end');
+}
+
+// ══════════════════════════════════════════════════════
+//  شروع
+// ══════════════════════════════════════════════════════
+setTimeout(()=>{
+  document.getElementById('loading').style.opacity='0';
+  document.getElementById('loading').style.transition='opacity 0.5s';
+  setTimeout(()=>{
+    document.getElementById('loading').style.display='none';
+    showScreen('menu');
+  },500);
+},2000);
+</script>
+</body>
+</html>
