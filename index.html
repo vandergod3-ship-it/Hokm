@@ -1,0 +1,1584 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" id="html-root">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>حکم — Ecorp</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#c9a84c;--gold2:#f0d080;--gold3:#8B6000;
+  --dark:#0a0806;--dark2:#120e08;--dark3:#1c1510;
+  --red:#c0392b;--green:#27ae60;
+  --text:#f0e0c0;--dim:#7a6540;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;font-family:'Vazirmatn',sans-serif;background:var(--dark);color:var(--text);user-select:none;}
+.pg{position:fixed;inset:0;display:none;flex-direction:column;overflow:hidden;}
+.pg.on{display:flex;}
+/* صفحات قابل اسکرول */
+.pg-scroll{position:fixed;inset:0;display:none;flex-direction:column;overflow:hidden;}
+.pg-scroll.on{display:flex;}
+.pg-scroll .scroll-content{flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
+
+/* لودینگ */
+#pg-load{background:#0a0806;align-items:center;justify-content:center;gap:16px;}
+.load-spade{font-size:90px;animation:ls 1.6s ease-in-out infinite;}
+@keyframes ls{0%,100%{transform:scale(1)}50%{transform:scale(1.12) rotate(8deg)}}
+.load-title{font-size:36px;font-weight:900;color:var(--gold);letter-spacing:4px;}
+.load-corp{font-size:12px;color:var(--dim);letter-spacing:6px;}
+.load-bar{width:200px;height:3px;background:#222;border-radius:2px;overflow:hidden;}
+.load-fill{height:100%;background:linear-gradient(90deg,var(--gold3),var(--gold2));animation:lf 2.2s ease forwards;}
+@keyframes lf{from{width:0}to{width:100%}}
+
+/* انتخاب زبان */
+#pg-lang{background:#0a0806;align-items:center;justify-content:center;gap:24px;}
+.lang-logo{font-size:80px;margin-bottom:8px;}
+.lang-title{font-size:32px;font-weight:900;color:var(--gold);letter-spacing:4px;}
+.lang-sub{font-size:13px;color:var(--dim);margin-bottom:8px;}
+.lang-btns{display:flex;gap:16px;}
+.lang-btn{background:rgba(201,168,76,.08);border:2px solid rgba(201,168,76,.3);border-radius:16px;padding:20px 32px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;transition:all .15s;}
+.lang-btn:active{transform:scale(.93);border-color:var(--gold);}
+.lang-flag{font-size:40px;}
+.lang-name{font-size:16px;font-weight:700;color:var(--gold);}
+
+/* منو */
+#pg-menu{background:#0a0806;}
+.menu-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 30%,#2e1a00,#0a0806 70%);pointer-events:none;}
+.menu-inner{position:relative;z-index:1;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
+.menu-emblem{font-size:70px;margin-bottom:6px;filter:drop-shadow(0 0 28px rgba(201,168,76,.5));}
+.menu-title{font-size:42px;font-weight:900;color:var(--gold);letter-spacing:6px;}
+.menu-corp{font-size:12px;color:var(--dim);letter-spacing:6px;margin:4px 0 36px;}
+.menu-btns{display:flex;flex-direction:column;gap:12px;width:100%;max-width:300px;}
+.mbtn{font-family:inherit;border:none;border-radius:14px;padding:17px;font-size:17px;font-weight:700;cursor:pointer;letter-spacing:1px;transition:transform .12s,opacity .12s;width:100%;}
+.mbtn:active{transform:scale(.96);opacity:.85;}
+.mbtn-gold{background:linear-gradient(135deg,var(--gold3),var(--gold),var(--gold3));color:#1a0800;}
+.mbtn-out{background:rgba(201,168,76,.08);color:var(--gold);border:1.5px solid rgba(201,168,76,.25);}
+
+/* هدر */
+.hdr{display:flex;align-items:center;gap:10px;padding:12px 14px;background:rgba(0,0,0,.55);border-bottom:1px solid rgba(201,168,76,.1);flex-shrink:0;}
+.hdr-back{background:rgba(201,168,76,.1);border:none;color:var(--gold);width:38px;height:38px;border-radius:10px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.hdr-title{font-size:18px;font-weight:700;color:var(--gold);}
+
+/* انتخاب حالت */
+#pg-sel{background:var(--dark2);}
+.sel-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;}
+.mode-card{background:linear-gradient(135deg,var(--dark3),#201808);border:1px solid rgba(201,168,76,.15);border-radius:18px;padding:20px 16px;cursor:pointer;transition:all .15s;}
+.mode-card:active{border-color:var(--gold);transform:scale(.98);}
+.mode-tag{display:inline-block;font-size:12px;font-weight:700;padding:3px 10px;border-radius:6px;margin-bottom:10px;}
+.tag-free{background:rgba(39,174,96,.2);color:#4ae080;border:1px solid rgba(39,174,96,.3);}
+.tag-soon{background:rgba(201,168,76,.1);color:var(--gold);border:1px solid rgba(201,168,76,.2);}
+.mode-icon{font-size:38px;margin-bottom:8px;}
+.mode-name{font-size:20px;font-weight:900;color:var(--gold);margin-bottom:5px;}
+.mode-desc{font-size:13px;color:var(--dim);line-height:1.6;}
+
+/* تنظیمات */
+#pg-settings{background:var(--dark2);overflow:hidden;}
+.stbody{padding:14px;display:flex;flex-direction:column;gap:14px;padding-bottom:30px;}
+.stcard{background:var(--dark3);border:1px solid rgba(201,168,76,.1);border-radius:16px;overflow:hidden;}
+.stcard-title{padding:12px 14px;font-size:14px;font-weight:700;color:var(--gold);background:rgba(0,0,0,.3);border-bottom:1px solid rgba(201,168,76,.08);}
+.stcard-body{padding:14px;}
+.cur-sticker-row{display:flex;align-items:center;gap:14px;padding:4px 0 12px;}
+.cur-emj-big{font-size:54px;line-height:1;}
+.cur-st-info .cur-st-name{font-size:16px;font-weight:700;color:var(--gold);}
+.cur-st-info .cur-st-wins{font-size:13px;color:var(--dim);margin-top:3px;}
+.emoji-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;}
+.ebtn{width:46px;height:46px;border-radius:11px;border:2px solid rgba(255,255,255,.07);background:rgba(255,255,255,.04);cursor:pointer;font-size:24px;display:flex;align-items:center;justify-content:center;transition:all .15s;position:relative;}
+.ebtn.active{border-color:var(--gold);background:rgba(201,168,76,.15);}
+.ebtn.locked{opacity:.38;cursor:not-allowed;}
+.ebtn:active:not(.locked){transform:scale(.82);}
+.elockbadge{position:absolute;bottom:-2px;right:-2px;background:var(--dark2);border-radius:50%;width:17px;height:17px;font-size:9px;display:flex;align-items:center;justify-content:center;}
+.wprog{margin-top:12px;padding:10px 0 0;border-top:1px solid rgba(201,168,76,.08);}
+.wprog-txt{font-size:13px;color:var(--dim);margin-bottom:6px;}
+.wbar{height:5px;background:#222;border-radius:3px;overflow:hidden;}
+.wfill{height:100%;background:linear-gradient(90deg,var(--gold3),var(--gold));border-radius:3px;transition:width .6s;}
+.st-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:15px;}
+.st-row:last-child{border-bottom:none;}
+.st-val{color:var(--gold);font-weight:600;}
+.bg-grid{display:flex;gap:10px;flex-wrap:wrap;padding-top:4px;}
+.bg-opt{width:52px;height:40px;border-radius:10px;cursor:pointer;border:2px solid transparent;transition:all .15s;display:flex;align-items:center;justify-content:center;}
+.bg-opt.sel{border-color:var(--gold);box-shadow:0 0 12px rgba(201,168,76,.3);}
+.bg-opt:active{transform:scale(.9);}
+.bg-felt{width:34px;height:22px;border-radius:50%;border:1px solid rgba(255,255,255,.2);}
+
+/* امتیاز */
+#pg-rank{background:var(--dark2);overflow:hidden;}
+.rank-body{padding:14px;display:flex;flex-direction:column;gap:10px;padding-bottom:30px;}
+.rme-box{background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.3);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px;}
+.rank-list{display:flex;flex-direction:column;gap:8px;}
+.rank-item{background:var(--dark3);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:12px;}
+.rank-item.mei{border-color:rgba(201,168,76,.3);background:rgba(201,168,76,.05);}
+.rpos{font-size:18px;font-weight:900;color:var(--dim);width:28px;text-align:center;flex-shrink:0;}
+.rp1{color:#FFD700;}.rp2{color:#C0C0C0;}.rp3{color:#CD7F32;}
+.remj{font-size:28px;flex-shrink:0;}
+.rinfo{flex:1;}
+.rnm{font-size:15px;font-weight:700;}
+.rwins{font-size:12px;color:var(--dim);margin-top:2px;}
+.rbadge{font-size:20px;}
+.rloading{text-align:center;padding:30px;color:var(--dim);font-size:14px;}
+
+/* ══ بازی ══ */
+#pg-game{background:#2a1a0a;transition:background .5s;}
+.gtop{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:rgba(0,0,0,.75);border-bottom:1px solid rgba(201,168,76,.1);flex-shrink:0;}
+.gtrump{background:rgba(0,0,0,.7);border:1px solid rgba(201,168,76,.4);border-radius:9px;padding:5px 12px;font-size:16px;font-weight:700;color:var(--gold);}
+.gscores{display:flex;gap:5px;align-items:center;}
+.gsc{background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:4px 9px;text-align:center;}
+.gsc small{display:block;font-size:12px;color:var(--dim);}
+.gsc b{display:block;font-size:16px;font-weight:900;color:var(--gold2);}
+.gleave{background:rgba(180,40,30,.3);border:1px solid rgba(180,40,30,.4);border-radius:8px;padding:5px 10px;font-size:13px;color:#ff7777;cursor:pointer;font-family:inherit;font-weight:600;}
+
+/* شاخ‌های برده شده */
+.tricks-row{display:flex;justify-content:space-between;padding:4px 10px;background:rgba(0,0,0,.5);flex-shrink:0;}
+.tricks-side{display:flex;gap:3px;align-items:center;flex:1;}
+.tricks-side.right{justify-content:flex-end;}
+.trick-dot{width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);transition:all .3s;}
+.trick-dot.won-us{background:var(--green);border-color:#4ae080;box-shadow:0 0 6px rgba(39,174,96,.5);}
+.trick-dot.won-them{background:var(--red);border-color:#e74c3c;box-shadow:0 0 6px rgba(192,57,43,.5);}
+.tricks-label{font-size:11px;color:var(--dim);padding:0 6px;align-self:center;}
+
+/* میز */
+.gtable{flex:1;position:relative;overflow:hidden;}
+.felt{position:absolute;top:50%;left:50%;transform:translate(-50%,-52%);width:min(220px,58vw);height:min(320px,75vw);border-radius:50%;background:radial-gradient(ellipse,#1e5a1e,#0e320e);border:3px solid rgba(201,168,76,.2);box-shadow:0 0 50px rgba(0,0,0,.7),inset 0 0 30px rgba(0,0,0,.5);}
+.pslot{position:absolute;display:flex;flex-direction:column;align-items:center;gap:3px;}
+.pslot-top{top:4px;left:50%;transform:translateX(-50%);}
+.pslot-left{top:50%;left:4px;transform:translateY(-60%);}
+.pslot-right{top:50%;right:4px;transform:translateY(-60%);}
+.pbox{display:flex;flex-direction:column;align-items:center;gap:2px;background:rgba(0,0,0,.65);border:1.5px solid rgba(255,255,255,.1);border-radius:12px;padding:7px 10px;transition:all .3s;min-width:58px;}
+.pbox.my-turn{border-color:rgba(201,168,76,.8);box-shadow:0 0 18px rgba(201,168,76,.25);}
+.pbox.hakem-box{border-color:rgba(255,215,0,.7);}
+.pemj{font-size:26px;line-height:1;}
+.pnm{font-size:13px;font-weight:700;color:var(--gold);white-space:nowrap;max-width:80px;overflow:hidden;text-overflow:ellipsis;}
+.pcd{font-size:13px;color:var(--dim);}
+.ptr{font-size:12px;color:var(--gold2);min-height:13px;}
+.pteam{font-size:12px;padding:1px 6px;border-radius:4px;margin-top:1px;font-weight:600;}
+.tu{background:rgba(39,174,96,.2);color:#4ae080;}
+.tt{background:rgba(192,57,43,.2);color:#e74c3c;}
+
+/* کارت روی میز */
+.tzone{position:absolute;inset:0;pointer-events:none;}
+.tcwrap{position:absolute;display:flex;flex-direction:column;align-items:center;gap:3px;}
+.tcwrap-top{top:92px;left:50%;transform:translateX(-50%);}
+.tcwrap-left{top:50%;left:56px;transform:translateY(-60%);}
+.tcwrap-right{top:50%;right:56px;transform:translateY(-60%);}
+.tcwrap-me{bottom:86px;left:50%;transform:translateX(-50%);}
+.tcard{width:48px;height:68px;border-radius:8px;background:#fffef8;border:2px solid #d0c090;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.6);}
+.tcard.rc{color:var(--red);}.tcard.bc{color:#1a1a2e;}
+.tcr{font-size:18px;font-weight:800;line-height:1;}
+.tcs{font-size:20px;line-height:1;}
+.tcnm{font-size:10px;color:var(--dim);}
+
+/* state overlay */
+.sover{position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;pointer-events:none;}
+.sover.act{pointer-events:auto;}
+.smsg{background:rgba(0,0,0,.92);border:1px solid rgba(201,168,76,.45);border-radius:18px;padding:18px 26px;text-align:center;max-width:84vw;display:none;}
+.smsg.on{display:block;animation:min .28s ease;}
+@keyframes min{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:scale(1)}}
+.smsgt{font-size:19px;font-weight:700;color:var(--gold);margin-bottom:5px;}
+.smsgb{font-size:15px;color:var(--dim);}
+.tbtns{display:none;gap:10px;}
+.tbtns.on{display:flex;}
+.tbtn{background:#f5f0e8;border:3px solid rgba(201,168,76,.5);border-radius:14px;padding:14px 14px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;min-width:66px;transition:all .15s;box-shadow:0 4px 16px rgba(0,0,0,.5);}
+.tbtn:active{border-color:var(--gold);background:#fff;transform:scale(.88);}
+.tbtn-s{font-size:32px;line-height:1;}
+.tbtn-n{font-size:12px;color:#333;font-family:inherit;font-weight:600;}
+
+/* دست */
+.hand-area{background:rgba(0,0,0,.9);border-top:1px solid rgba(201,168,76,.1);flex-shrink:0;padding:5px 4px 10px;}
+.hlbl{text-align:center;font-size:15px;color:var(--dim);padding:3px 0 7px;transition:color .3s;}
+.hlbl.act{color:var(--gold);font-weight:600;}
+.hrow{display:flex;justify-content:center;align-items:flex-end;overflow:visible;min-height:78px;}
+.card{flex-shrink:0;width:47px;height:68px;border-radius:9px;background:#fffef8;border:2px solid #d8cc9a;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.5);transition:transform .15s;}
+.cr{font-size:17px;font-weight:800;line-height:1;}
+.cs{font-size:22px;line-height:1;margin-top:1px;}
+.card.red .cr,.card.red .cs{color:var(--red);}
+.card.blk .cr,.card.blk .cs{color:#1a1a2e;}
+.card.play:active,.card.up{transform:translateY(-22px) scale(1.06)!important;z-index:50!important;box-shadow:0 14px 30px rgba(0,0,0,.7);}
+.card.dis{opacity:.34;cursor:not-allowed;}
+
+/* dialog خروج */
+.dialog-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:none;align-items:center;justify-content:center;}
+.dialog-overlay.on{display:flex;}
+.dialog{background:#1c1510;border:1px solid rgba(201,168,76,.3);border-radius:18px;padding:24px;text-align:center;max-width:85vw;width:320px;}
+.dialog-t{font-size:18px;font-weight:700;color:var(--gold);margin-bottom:10px;}
+.dialog-b{font-size:14px;color:var(--dim);margin-bottom:20px;line-height:1.6;}
+.dialog-btns{display:flex;gap:10px;}
+.dbtn{flex:1;font-family:inherit;border:none;border-radius:12px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;}
+.dbtn-red{background:rgba(180,40,30,.8);color:#fff;}
+.dbtn-cancel{background:rgba(255,255,255,.08);color:var(--text);}
+
+/* پایان */
+#pg-end{align-items:center;justify-content:center;gap:13px;background:radial-gradient(ellipse at 50% 30%,#1a1000,#0a0806);}
+.end-emj{font-size:82px;animation:ep .5s ease;}
+@keyframes ep{0%{transform:scale(0)}70%{transform:scale(1.2)}100%{transform:scale(1)}}
+.end-ttl{font-size:30px;font-weight:900;color:var(--gold);}
+.end-sc{background:rgba(0,0,0,.5);border:1px solid rgba(201,168,76,.2);border-radius:14px;padding:16px 28px;text-align:center;}
+.end-sr{font-size:16px;color:var(--text);margin:4px 0;}
+.end-sr span{color:var(--gold);font-weight:700;}
+.end-btns{display:flex;flex-direction:column;gap:10px;width:270px;}
+
+/* toast */
+.toast{position:fixed;top:63px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.92);border:1px solid rgba(201,168,76,.3);border-radius:12px;padding:10px 20px;font-size:14px;color:var(--text);z-index:500;pointer-events:none;max-width:90vw;text-align:center;animation:tin .2s,tout .2s 2.5s forwards;}
+@keyframes tin{from{opacity:0;transform:translateX(-50%) translateY(-8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@keyframes tout{to{opacity:0}}
+</style>
+</head>
+<body>
+
+<!-- لودینگ -->
+<div id="pg-load" class="pg on">
+  <div class="load-spade">♠️</div>
+  <div class="load-title">حکم</div>
+  <div class="load-corp">E C O R P</div>
+  <div class="load-bar"><div class="load-fill"></div></div>
+</div>
+
+<!-- انتخاب زبان -->
+<div id="pg-lang" class="pg">
+  <div class="lang-logo">🎴</div>
+  <div class="lang-title" id="lang-title">حکم</div>
+  <div class="lang-sub" id="lang-sub">زبان خود را انتخاب کنید · Choose your language</div>
+  <div class="lang-btns">
+    <div class="lang-btn" onclick="setLang('fa')">
+      <div class="lang-flag">🇮🇷</div>
+      <div class="lang-name">فارسی</div>
+    </div>
+    <div class="lang-btn" onclick="setLang('en')">
+      <div class="lang-flag">🇬🇧</div>
+      <div class="lang-name">English</div>
+    </div>
+  </div>
+</div>
+
+<!-- منو -->
+<div id="pg-menu" class="pg">
+  <div class="menu-bg"></div>
+  <div class="menu-inner">
+    <div class="menu-emblem">♠️</div>
+    <div class="menu-title" id="m-title">حکم</div>
+    <div class="menu-corp">E C O R P</div>
+    <div class="menu-btns">
+      <button class="mbtn mbtn-gold" onclick="go('sel')" id="m-play">🎮 بازی جدید</button>
+      <button class="mbtn mbtn-out" onclick="go('rank')" id="m-rank">🏆 امتیاز بازیکنان</button>
+      <button class="mbtn mbtn-out" onclick="go('rules')" id="m-rules">📖 قوانین بازی</button>
+      <button class="mbtn mbtn-out" onclick="go('settings')" id="m-set">⚙️ تنظیمات</button>
+    </div>
+  </div>
+</div>
+
+<!-- انتخاب حالت -->
+<div id="pg-sel" class="pg">
+  <div class="hdr">
+    <button class="hdr-back" onclick="go('menu')">←</button>
+    <div class="hdr-title" id="sel-title">انتخاب بازی</div>
+  </div>
+  <div class="sel-body">
+    <div class="mode-card" onclick="startGame(4,7)">
+      <div class="mode-tag tag-free" id="tag-free1">رایگان</div>
+      <div class="mode-icon">👥</div>
+      <div class="mode-name" id="mode1-name">۴ نفره — ۷ راند</div>
+      <div class="mode-desc" id="mode1-desc">بازی کوتاه، تیمی که مجموع امتیاز‌هایش در هفت راند بیشتر باشد برنده است</div>
+    </div>
+    <div class="mode-card" onclick="startGame(4,13)">
+      <div class="mode-tag tag-free" id="tag-free2">رایگان</div>
+      <div class="mode-icon">🃏</div>
+      <div class="mode-name" id="mode2-name">۴ نفره — ۱۳ راند</div>
+      <div class="mode-desc" id="mode2-desc">بازی کامل ۱۳ راند</div>
+    </div>
+    <div class="mode-card" style="opacity:.55;pointer-events:none">
+      <div class="mode-tag tag-soon" id="tag-soon">به زودی</div>
+      <div class="mode-icon">🌐</div>
+      <div class="mode-name" id="mode4-name">آنلاین با دوستان</div>
+      <div class="mode-desc" id="mode4-desc">به زودی</div>
+    </div>
+  </div>
+</div>
+
+<!-- تنظیمات -->
+<div id="pg-settings" class="pg-scroll">
+  <div class="hdr">
+    <button class="hdr-back" onclick="go('menu')">←</button>
+    <div class="hdr-title" id="set-title">تنظیمات</div>
+  </div>
+  <div class="scroll-content">
+  <div class="stbody">
+    <!-- استیکر فعلی -->
+    <div class="stcard">
+      <div class="stcard-title" id="set-cur-title">⭐ استیکر فعلی من</div>
+      <div class="stcard-body">
+        <div class="cur-sticker-row">
+          <div class="cur-emj-big" id="set-cur-emj">🧑</div>
+          <div class="cur-st-info">
+            <div class="cur-st-name" id="set-cur-name">—</div>
+            <div class="cur-st-wins" id="set-cur-wins">۰ برد</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- گرید استیکر -->
+    <div class="stcard">
+      <div class="stcard-title" id="set-stk-title">🎭 مجموعه استیکرها</div>
+      <div class="stcard-body">
+        <div class="emoji-grid" id="emoji-grid"></div>
+        <div class="wprog" id="wprog"></div>
+      </div>
+    </div>
+    <!-- پس‌زمینه -->
+    <div class="stcard">
+      <div class="stcard-title" id="set-bg-title">🎨 پس‌زمینه بازی</div>
+      <div class="stcard-body">
+        <div class="bg-grid" id="bg-grid"></div>
+      </div>
+    </div>
+    <!-- آمار -->
+    <div class="stcard">
+      <div class="stcard-title" id="set-stat-title">📊 آمار من</div>
+      <div class="stcard-body">
+        <div class="st-row"><div id="set-wins-lbl">تعداد برد</div><div class="st-val" id="set-w">0</div></div>
+        <div class="st-row"><div id="set-loss-lbl">تعداد باخت</div><div class="st-val" id="set-l">0</div></div>
+        <div class="st-row"><div id="set-total-lbl">بازی کل</div><div class="st-val" id="set-t">0</div></div>
+      </div>
+    </div>
+    <button class="mbtn mbtn-gold" onclick="saveSettings()" id="set-save">✅ ذخیره</button>
+    <button class="mbtn mbtn-out" onclick="go('lang')" id="set-lang-btn">🌐 تغییر زبان / Change Language</button>
+  </div>
+  </div>
+</div>
+
+<!-- امتیاز -->
+<div id="pg-rank" class="pg-scroll">
+  <div class="hdr">
+    <button class="hdr-back" onclick="go('menu')">←</button>
+    <div class="hdr-title" id="rank-title">🏆 امتیاز بازیکنان</div>
+  </div>
+  <div class="scroll-content">
+  <div class="rank-body">
+    <div class="rme-box">
+      <div style="font-size:40px" id="rme-emj">🧑</div>
+      <div>
+        <div style="font-size:16px;font-weight:700;color:var(--gold)" id="rme-nm">—</div>
+        <div style="font-size:12px;color:var(--dim)" id="rme-lbl">تعداد برد:</div>
+        <div style="font-size:24px;font-weight:900;color:var(--gold2)" id="rme-w">0</div>
+      </div>
+      <div style="margin-right:auto;font-size:26px" id="rme-pos">—</div>
+    </div>
+    <div class="rank-list" id="rank-list">
+      <div class="rloading" id="rank-loading">⏳ در حال بارگذاری...</div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- قوانین -->
+<div id="pg-rules" class="pg-scroll">
+  <div class="hdr">
+    <button class="hdr-back" onclick="go('menu')">←</button>
+    <div class="hdr-title" id="rules-title">📖 قوانین بازی</div>
+  </div>
+  <div class="scroll-content">
+  <div class="stbody" id="rules-body"></div>
+  </div>
+</div>
+
+<!-- بازی -->
+<div id="pg-game" class="pg">
+  <div class="gtop">
+    <button class="gleave" id="btn-leave" onclick="askLeave()">⬅ <span id="lv-txt">خروج</span></button>
+    <div class="gscores">
+      <div class="gsc"><small id="sc-us-lbl">ما</small><b id="sc-us">0</b></div>
+      <div class="gsc"><small id="sc-th-lbl">حریف</small><b id="sc-th">0</b></div>
+      <div class="gsc"><small id="sc-rnd-lbl">راند</small><b id="sc-rnd">1</b></div>
+    </div>
+    <div class="gtrump" id="gtrump">حکم: —</div>
+  </div>
+
+  <!-- شاخ‌ها -->
+  <div class="tricks-row">
+    <div class="tricks-side" id="tricks-us"></div>
+    <div class="tricks-label" id="tricks-lbl">شاخ</div>
+    <div class="tricks-side right" id="tricks-them"></div>
+  </div>
+
+  <div class="gtable" id="gtable">
+    <div class="felt" id="felt"></div>
+
+    <!-- بالا -->
+    <div class="pslot pslot-top">
+      <div class="pbox" id="pb1">
+        <div class="pemj" id="pe1">🧑</div>
+        <div class="pnm" id="pn1">—</div>
+        <div class="pcd" id="pc1">🂠 13</div>
+        <div class="ptr" id="pt1"></div>
+      </div>
+    </div>
+    <!-- چپ -->
+    <div class="pslot pslot-left" id="psl2">
+      <div class="pbox" id="pb2">
+        <div class="pemj" id="pe2">🧑</div>
+        <div class="pnm" id="pn2">—</div>
+        <div class="pcd" id="pc2">🂠 13</div>
+        <div class="ptr" id="pt2"></div>
+      </div>
+    </div>
+    <!-- راست -->
+    <div class="pslot pslot-right" id="psl3">
+      <div class="pbox" id="pb3">
+        <div class="pemj" id="pe3">🧑</div>
+        <div class="pnm" id="pn3">—</div>
+        <div class="pcd" id="pc3">🂠 13</div>
+        <div class="ptr" id="pt3"></div>
+      </div>
+    </div>
+
+    <!-- کارت روی میز -->
+    <div class="tzone" id="tzone"></div>
+
+    <!-- state -->
+    <div class="sover" id="sover">
+      <div class="smsg" id="smsg">
+        <div class="smsgt" id="smsgt">—</div>
+        <div class="smsgb" id="smsgb"></div>
+      </div>
+      <div class="tbtns" id="tbtns">
+        <button class="tbtn" onclick="pickTrump('♠')"><span class="tbtn-s" style="color:#1a1a2e">♠</span><span class="tbtn-n" id="tn-s">پیک</span></button>
+        <button class="tbtn" onclick="pickTrump('♥')"><span class="tbtn-s" style="color:#c0392b">♥</span><span class="tbtn-n" id="tn-h">دل</span></button>
+        <button class="tbtn" onclick="pickTrump('♦')"><span class="tbtn-s" style="color:#c0392b">♦</span><span class="tbtn-n" id="tn-d">خشت</span></button>
+        <button class="tbtn" onclick="pickTrump('♣')"><span class="tbtn-s" style="color:#1a1a2e">♣</span><span class="tbtn-n" id="tn-c">گشنیز</span></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="hand-area">
+    <div class="hlbl" id="hlbl">دست شما</div>
+    <div class="hrow" id="hrow"></div>
+  </div>
+</div>
+
+<!-- تاریخچه راند -->
+<div id="pg-history" class="pg-scroll" style="background:#0a0806;z-index:50;">
+  <div class="hdr">
+    <button class="hdr-back" onclick="closeHistory()" id="hist-back">←</button>
+    <div class="hdr-title" id="hist-title">📋 تاریخچه راند</div>
+  </div>
+  <div class="scroll-content">
+    <div style="padding:14px;display:flex;flex-direction:column;gap:10px;" id="hist-body"></div>
+  </div>
+</div>
+
+<!-- dialog خروج -->
+<div class="dialog-overlay" id="leave-dialog">
+  <div class="dialog">
+    <div class="dialog-t" id="dlg-t">خروج از بازی</div>
+    <div class="dialog-b" id="dlg-b">بازی از دست می‌رود. مطمئنی که می‌خوای خارج بشی؟</div>
+    <div class="dialog-btns">
+      <button class="dbtn dbtn-cancel" onclick="closeLeaveDialog()" id="dlg-cancel">انصراف</button>
+      <button class="dbtn dbtn-red" onclick="confirmLeave()" id="dlg-confirm">خروج</button>
+    </div>
+  </div>
+</div>
+
+<!-- پایان -->
+<div id="pg-end" class="pg">
+  <div class="end-emj" id="end-emj">🏆</div>
+  <div class="end-ttl" id="end-ttl">بردید!</div>
+  <div class="end-sc" id="end-sc"></div>
+  <div class="end-btns">
+    <button class="mbtn mbtn-gold" onclick="startGame(window._lm||4,window._lr||7)" id="end-retry">🔄 بازی مجدد</button>
+    <button class="mbtn mbtn-out" onclick="go('menu')" id="end-menu">🏠 منوی اصلی</button>
+  </div>
+</div>
+
+<script>
+// ══ تلگرام ══
+const tg=window.Telegram?.WebApp;
+if(tg){tg.ready();tg.expand();}
+const TGU=tg?.initDataUnsafe?.user;
+const MY_NAME=TGU?.first_name||'شما';
+const MY_ID=TGU?.id||('g'+Math.random().toString(36).slice(2,7));
+
+// ══ زبان ══
+const T={
+  fa:{
+    dir:'rtl',
+    menuTitle:'حکم',menuPlay:'🎮 بازی جدید',menuRank:'🏆 امتیاز بازیکنان',menuRules:'📖 قوانین بازی',menuSet:'⚙️ تنظیمات',
+    selTitle:'انتخاب بازی',
+    mode1:'۴ نفره — ۷ راند',mode1d:'بازی کوتاه، تیمی که مجموع امتیاز‌هایش در هفت راند بیشتر باشد برنده است',
+    mode2:'۴ نفره — ۱۳ راند',mode2d:'بازی کامل ۱۳ راند',
+    mode4:'آنلاین با دوستان',mode4d:'به زودی',
+    setTitle:'تنظیمات',setCurTitle:'⭐ استیکر فعلی من',setStkTitle:'🎭 مجموعه استیکرها',
+    setBgTitle:'🎨 پس‌زمینه بازی',setStatTitle:'📊 آمار من',
+    winsLbl:'تعداد برد',lossLbl:'تعداد باخت',totalLbl:'بازی کل',setSave:'✅ ذخیره',
+    rankTitle:'🏆 امتیاز بازیکنان',rankWinsLbl:'تعداد برد:',rankLoading:'⏳ در حال بارگذاری...',rankEmpty:'هنوز کسی ثبت نشده!',
+    scUs:'ما',scTh:'حریف',scRnd:'راند',lvTxt:'خروج',
+    trickLbl:'شاخ',handLbl:'دست شما',handTurn:'نوبت شماست — روی کارت بزنید',
+    teamUs:'هم‌تیمی',teamThem:'حریف',
+    hakemIs:'حاکم است',hakemYou:'شما حاکم هستید',hakemChoose:'حکم بازی را انتخاب کنید',hakemChoosing:'در حال انتخاب حکم...',
+    trumpSet:'حکم انتخاب شد ✅',gameStart:'بازی شروع می‌شود...',
+    trickWonUs:'🎯 امتیاز برای تیم شما',
+    trickWonThem:'🎯 امتیاز برای تیم حریف',
+    won:'بردید!',lost:'باختید!',
+    roundWonUs:'✅ تیم شما راند را برد',roundWonThem:'❌ تیم حریف راند را برد',
+    korUs:'🔥 کور! تیم شما ۲ امتیاز',korThem:'🔥 کور! تیم حریف ۲ امتیاز',
+    hkUs:'💥 حاکم‌کوت! تیم شما ۳ امتیاز',hkThem:'💥 حاکم‌کوت! تیم حریف ۳ امتیاز',
+    totalWins:'مجموع برد:',newSticker:'🎉 استیکر جدید باز شد!',
+    retryBtn:'🔄 بازی مجدد',menuBtn:'🏠 منوی اصلی',
+    dlgTitle:'خروج از بازی',dlgBody:'بازی از دست می‌رود. مطمئنی که می‌خوای خارج بشی؟',dlgCancel:'انصراف',dlgConfirm:'خروج',
+    invalid:'⚠️ این کارت مجاز نیست',
+    tnS:'پیک',tnH:'دل',tnD:'خشت',tnC:'گشنیز',
+    winsUnit:'برد',
+    free:'رایگان',soon:'به زودی',
+    nextStk:'برای باز کردن',stkNeed:'نیاز به',stkWins:'برد',proPlayer:'👑 پرو پلیر! تمام استیکرها باز شده‌اند',
+    rulesTitle:'📖 قوانین بازی حکم',
+    rulesText:`<b style="color:var(--gold);font-size:16px">🎯 هدف بازی</b><br>
+بازی حکم با ۴ بازیکن در دو تیم ۲ نفره انجام می‌شود. افراد روبرو هم‌تیمی هستند. هر تیم باید ۷ شاخ از ۱۳ شاخ ممکن را در هر راند ببرد. تیمی که اول ۷ راند بگیرد، برنده کل بازی است.<br><br>
+
+<b style="color:var(--gold);font-size:16px">⭐ انتخاب حاکم</b><br>
+به هر بازیکن ۵ کارت داده می‌شود. اولین کسی که آس (از هر خالی) بگیرد حاکم می‌شود. اگر آس نیامد، شاه، بعد بی‌بی و به همین ترتیب ادامه می‌یابد.<br><br>
+
+<b style="color:var(--gold);font-size:16px">🃏 توزیع کارت</b><br>
+حاکم از بین ۵ کارت اول خود، خال حکم (خال برتر) را اعلام می‌کند. سپس به هر بازیکن ۴-۴ کارت دیگر داده می‌شود تا هر نفر در مجموع ۱۳ کارت داشته باشد.<br><br>
+
+<b style="color:var(--gold);font-size:16px">🎮 بازی کردن کارت‌ها</b><br>
+حاکم اولین کارت را می‌زند. پس از آن، بازیکنان <b>به ترتیب پادساعتگرد</b> کارت می‌زنند. اگر از آن خال داری باید بزنی. اگر نداری می‌توانی حکم بزنی (ببُری) یا هر کارت دیگری بزنی (رد بدهی).<br><br>
+
+<b style="color:var(--gold);font-size:16px">🏆 برنده شاخ</b><br>
+بالاترین کارت از خال اول برنده است. اگر کسی حکم زد، بالاترین حکم برنده است. برنده هر شاخ، شاخ بعدی را شروع می‌کند.<br><br>
+ترتیب قدرت: آس ← شاه ← بی‌بی ← سرباز ← ۱۰ ← ۹ ← ۸ ← ۷ ← ۶ ← ۵ ← ۴ ← ۳ ← ۲<br><br>
+
+<b style="color:var(--gold);font-size:16px">💰 امتیازدهی</b><br>
+• ۷ شاخ = ۱ امتیاز برای آن راند<br>
+• کور (حریف صفر شاخ) = ۲ امتیاز<br>
+• حاکم‌کوت (تیم حاکم صفر شاخ) = ۳ امتیاز برای حریف<br><br>
+
+<b style="color:var(--gold);font-size:16px">🔄 حاکم بعدی</b><br>
+اگر تیم حاکم برنده شود، همان حاکم می‌ماند. اگر حریف برنده شود، نفر سمت راست حاکم قبلی، حاکم جدید می‌شود.`,
+  },
+  en:{
+    dir:'ltr',
+    menuTitle:'Hokm',menuPlay:'🎮 New Game',menuRank:'🏆 Leaderboard',menuRules:'📖 Rules',menuSet:'⚙️ Settings',
+    selTitle:'Select Game',
+    mode1:'4 Players — 7 Rounds',mode1d:'Short game — the team with the higher total score after 7 rounds wins',
+    mode2:'4 Players — 13 Rounds',mode2d:'Full game — 13 rounds',
+    mode4:'Online with Friends',mode4d:'Coming soon',
+    setTitle:'Settings',setCurTitle:'⭐ My Current Sticker',setStkTitle:'🎭 Sticker Collection',
+    setBgTitle:'🎨 Game Background',setStatTitle:'📊 My Stats',
+    winsLbl:'Wins',lossLbl:'Losses',totalLbl:'Total Games',setSave:'✅ Save',
+    rankTitle:'🏆 Leaderboard',rankWinsLbl:'Wins:',rankLoading:'⏳ Loading...',rankEmpty:'No players yet!',
+    scUs:'Us',scTh:'Them',scRnd:'Round',lvTxt:'Leave',
+    trickLbl:'Tricks',handLbl:'Your Hand',handTurn:'Your turn — tap a card',
+    teamUs:'Partner',teamThem:'Opponent',
+    hakemIs:'is Hokm master',hakemYou:'You are Hokm master',hakemChoose:'Choose the trump suit',hakemChoosing:'Choosing trump...',
+    trumpSet:'Trump selected ✅',gameStart:'Game starting...',
+    trickWonUs:'🎯 Point for your team',
+    trickWonThem:'🎯 Point for opponent team',
+    won:'You Won!',lost:'You Lost!',
+    roundWonUs:'✅ Your team won the round',roundWonThem:'❌ Opponent team won the round',
+    korUs:'🔥 Kor! Your team gets 2 points',korThem:'🔥 Kor! Opponent team gets 2 points',
+    hkUs:'💥 Hakem-Koot! Your team gets 3 points',hkThem:'💥 Hakem-Koot! Opponent team gets 3 points',
+    totalWins:'Total wins:',newSticker:'🎉 New sticker unlocked!',
+    retryBtn:'🔄 Play Again',menuBtn:'🏠 Main Menu',
+    dlgTitle:'Leave Game',dlgBody:'Your progress will be lost. Are you sure you want to leave?',dlgCancel:'Cancel',dlgConfirm:'Leave',
+    invalid:'⚠️ Invalid card',
+    tnS:'Spades',tnH:'Hearts',tnD:'Diamonds',tnC:'Clubs',
+    winsUnit:'wins',
+    free:'Free',soon:'Soon',
+    nextStk:'To unlock',stkNeed:'need',stkWins:'wins',proPlayer:'👑 Pro Player! All stickers unlocked',
+    rulesTitle:'📖 Hokm Rules',
+    rulesText:`<b style="color:var(--gold);font-size:16px">🎯 Goal</b><br>
+Hokm is played with 4 players in 2 teams of 2. Players sitting across from each other are partners. Each team must win 7 tricks out of 13 per round. The first team to win 7 rounds wins the game.<br><br>
+
+<b style="color:var(--gold);font-size:16px">⭐ Choosing the Hokm Master</b><br>
+5 cards are dealt to each player. The first player to receive an Ace (any suit) becomes the Hokm Master. If no Ace appears, then King, Queen, and so on.<br><br>
+
+<b style="color:var(--gold);font-size:16px">🃏 Dealing Cards</b><br>
+The Hokm Master looks at their first 5 cards and declares the trump suit. Then each player receives 4 more cards (in sets of 4) until everyone has 13 cards total.<br><br>
+
+<b style="color:var(--gold);font-size:16px">🎮 Playing Cards</b><br>
+The Hokm Master plays the first card. Then players follow <b>counter-clockwise</b> order. You must follow the lead suit if you have it. If you don't, you may play any card — trump it or discard.<br><br>
+
+<b style="color:var(--gold);font-size:16px">🏆 Winning a Trick</b><br>
+The highest card of the lead suit wins. If trump was played, the highest trump wins. The trick winner leads the next trick.<br><br>
+Card rank: A ← K ← Q ← J ← 10 ← 9 ← 8 ← 7 ← 6 ← 5 ← 4 ← 3 ← 2<br><br>
+
+<b style="color:var(--gold);font-size:16px">💰 Scoring</b><br>
+• 7 tricks = 1 point for that round<br>
+• Kor (opponent gets 0 tricks) = 2 points<br>
+• Hakem-Koot (master's team gets 0) = 3 points for opponent<br><br>
+
+<b style="color:var(--gold);font-size:16px">🔄 Next Master</b><br>
+If the master's team wins, the same master continues. If the opponent wins, the player to the right of the old master becomes the new master.`,
+  }
+};
+
+let LANG='';
+const L=()=>T[LANG];
+
+function setLang(lang){
+  LANG=lang;
+  localStorage.setItem('hokm_lang',lang);
+  document.getElementById('html-root').setAttribute('dir',L().dir);
+  applyLang();
+  go('menu');
+}
+
+function applyLang(){
+  const l=L();
+  document.getElementById('html-root').setAttribute('dir',l.dir);
+  // منو
+  $('m-title',l.menuTitle);$('m-play',l.menuPlay);$('m-rank',l.menuRank);$('m-rules',l.menuRules);$('m-set',l.menuSet);
+  // انتخاب
+  $('sel-title',l.selTitle);
+  $('tag-free1',l.free);$('tag-free2',l.free);$('tag-soon',l.soon);
+  $('mode1-name',l.mode1);$('mode1-desc',l.mode1d);
+  $('mode2-name',l.mode2);$('mode2-desc',l.mode2d);
+  $('mode4-name',l.mode4);$('mode4-desc',l.mode4d);
+  // تنظیمات
+  $('set-title',l.setTitle);$('set-cur-title',l.setCurTitle);$('set-stk-title',l.setStkTitle);
+  $('set-bg-title',l.setBgTitle);$('set-stat-title',l.setStatTitle);
+  $('set-wins-lbl',l.winsLbl);$('set-loss-lbl',l.lossLbl);$('set-total-lbl',l.totalLbl);$('set-save',l.setSave);
+  // رنکینگ
+  $('rank-title',l.rankTitle);$('rme-lbl',l.rankWinsLbl);$('rank-loading',l.rankLoading);
+  // بازی
+  $('sc-us-lbl',l.scUs);$('sc-th-lbl',l.scTh);$('sc-rnd-lbl',l.scRnd);$('lv-txt',l.lvTxt);
+  $('tricks-lbl',l.trickLbl);
+  $('tn-s',l.tnS);$('tn-h',l.tnH);$('tn-d',l.tnD);$('tn-c',l.tnC);
+  // dialog
+  $('dlg-t',l.dlgTitle);$('dlg-b',l.dlgBody);$('dlg-cancel',l.dlgCancel);$('dlg-confirm',l.dlgConfirm);
+  // پایان
+  $('end-retry',l.retryBtn);$('end-menu',l.menuBtn);
+}
+
+function $(id,txt){const el=document.getElementById(id);if(el)el.textContent=txt;}
+
+// ══ اسامی ══
+const FA_NAMES=['علی','سارا','رضا','مریم','حسین','نازنین','امیر','فاطمه','آرش','لیلا','پریسا','دانیال','شیرین','کاوه','نگار','سینا','مهسا','فرزاد','زهرا','نیما'];
+const EN_NAMES=['Alex','Sarah','Ryan','Emma','James','Olivia','Liam','Ava','Noah','Isabella','Mason','Sophia','Ethan','Mia','Lucas','Charlotte','Oliver','Amelia','Aiden','Harper'];
+const AEMJ=['😄','🤗','😏','🧐','😤','🙄','🤔','😴','🥸','😎','🤠','🥷'];
+
+// ══ پس‌زمینه‌ها ══
+const BGS=[
+  {id:'classic',lbl:'کلاسیک / Classic',room:'#8B4513',felt:'#1e5a1e',brd:'rgba(201,168,76,.5)',text:'#fff'},
+  {id:'white',  lbl:'سفید / White',     room:'#e8e0d0',felt:'#2a6a2a',brd:'rgba(0,100,0,.5)',  text:'#222'},
+  {id:'red',    lbl:'قرمز / Red',       room:'#8B0000',felt:'#1a5a1a',brd:'rgba(255,200,0,.5)', text:'#fff'},
+  {id:'blue',   lbl:'آبی / Blue',       room:'#1a3a6a',felt:'#0a4a0a',brd:'rgba(100,180,255,.5)',text:'#fff'},
+  {id:'yellow', lbl:'زرد / Yellow',     room:'#8B7000',felt:'#1a4a1a',brd:'rgba(255,220,0,.5)', text:'#fff'},
+  {id:'green',  lbl:'سبز / Green',      room:'#1a5a1a',felt:'#0a3a0a',brd:'rgba(100,255,100,.4)',text:'#fff'},
+  {id:'purple', lbl:'بنفش / Purple',    room:'#4a1a6a',felt:'#2a1a4a',brd:'rgba(180,100,255,.5)',text:'#fff'},
+  {id:'orange', lbl:'نارنجی / Orange',  room:'#7a3a00',felt:'#1a5a1a',brd:'rgba(255,150,50,.5)', text:'#fff'},
+];
+
+// ══ استیکرها ══
+const STICKERS=[
+  {e:'🧑',minW:0,  lbl:'پیش‌فرض / Default'},
+  {e:'😄',minW:3,  lbl:'شاد / Happy'},
+  {e:'😎',minW:5,  lbl:'باحال / Cool'},
+  {e:'🤠',minW:8,  lbl:'کابوی / Cowboy'},
+  {e:'🥷',minW:10, lbl:'نینجا / Ninja'},
+  {e:'😏',minW:12, lbl:'زرنگ / Clever'},
+  {e:'🤩',minW:15, lbl:'ستاره / Star'},
+  {e:'🧔',minW:18, lbl:'ریشو / Bearded'},
+  {e:'👱',minW:20, lbl:'بلوند / Blonde'},
+  {e:'🤔',minW:22, lbl:'متفکر / Thinker'},
+  {e:'😤',minW:25, lbl:'جنگجو / Fighter'},
+  {e:'🧐',minW:28, lbl:'محقق / Researcher'},
+  {e:'🥸',minW:30, lbl:'مبدل / Disguised'},
+  {e:'🦸',minW:35, lbl:'قهرمان / Hero'},
+  {e:'🧙',minW:40, lbl:'جادوگر / Wizard'},
+  {e:'🤺',minW:45, lbl:'شمشیرباز / Fencer'},
+  {e:'🤴',minW:50, lbl:'شاهزاده / Prince'},
+  {e:'👸',minW:55, lbl:'شاهدخت / Princess'},
+  {e:'🦁',minW:60, lbl:'شیر / Lion'},
+  {e:'🐉',minW:70, lbl:'اژدها / Dragon'},
+  {e:'🌟',minW:80, lbl:'ستاره طلایی / Gold Star'},
+  {e:'💎',minW:90, lbl:'الماس / Diamond'},
+  {e:'👑',minW:100,lbl:'تاج / Crown'},
+  {e:'⚔️',minW:100,lbl:'شمشیر / Sword'},
+];
+
+// ══ JSONBin ══
+const BKEY='$2a$10$vfKMaw/jDe6FiWvcJxZqLetsy9mEskqBd0TEcjDbyfwxCNZH9fsFO';
+let BID=localStorage.getItem('hbid')||'';
+async function binGet(){
+  if(!BID)return null;
+  try{const r=await fetch(`https://api.jsonbin.io/v3/b/${BID}/latest`,{headers:{'X-Master-Key':BKEY}});
+    if(!r.ok)return null;return(await r.json()).record;}catch{return null;}
+}
+async function binSet(data){
+  try{
+    if(!BID){
+      const r=await fetch('https://api.jsonbin.io/v3/b',{method:'POST',
+        headers:{'Content-Type':'application/json','X-Master-Key':BKEY,'X-Bin-Name':'hokm-v3'},
+        body:JSON.stringify(data)});
+      if(!r.ok)return false;BID=(await r.json()).metadata.id;localStorage.setItem('hbid',BID);return true;
+    }
+    const r=await fetch(`https://api.jsonbin.io/v3/b/${BID}`,{method:'PUT',
+      headers:{'Content-Type':'application/json','X-Master-Key':BKEY},body:JSON.stringify(data)});
+    return r.ok;
+  }catch{return false;}
+}
+async function updateRank(won){
+  let data=await binGet()||{players:[]};
+  let me=data.players.find(p=>p.id==MY_ID);
+  if(!me){me={id:MY_ID,name:MY_NAME,emoji:CFG.emoji,wins:0,losses:0};data.players.push(me);}
+  me.name=MY_NAME;me.emoji=CFG.emoji;
+  if(won)me.wins++;else me.losses++;
+  data.players.sort((a,b)=>b.wins-a.wins);
+  binSet(data);
+}
+
+// ══ تنظیمات ══
+let CFG={emoji:'🧑',tempEmoji:'🧑',bg:BGS[0],tempBg:BGS[0],wins:0,losses:0};
+
+function loadCFG(){
+  try{
+    const d=JSON.parse(localStorage.getItem('hokm_cfg')||'{}');
+    CFG.emoji=d.emoji||'🧑';CFG.wins=d.wins||0;CFG.losses=d.losses||0;
+    CFG.bg=BGS.find(b=>b.id===d.bgId)||BGS[0];
+  }catch{}
+  LANG=localStorage.getItem('hokm_lang')||'';
+}
+function saveCFGLocal(){
+  localStorage.setItem('hokm_cfg',JSON.stringify({emoji:CFG.emoji,wins:CFG.wins,losses:CFG.losses,bgId:CFG.bg.id}));
+}
+
+// ══ صفحات ══
+function go(id){
+  document.querySelectorAll('.pg,.pg-scroll').forEach(p=>p.classList.remove('on'));
+  document.getElementById('pg-'+id).classList.add('on');
+  if(id==='settings')buildSettings();
+  if(id==='rank')loadRank();
+  if(id==='rules')buildRules();
+}
+
+function buildRules(){
+  const l=L();
+  $('rules-title',l.rulesTitle);
+  const body=document.getElementById('rules-body');
+  if(!body)return;
+  body.innerHTML=`<div class="stcard"><div class="stcard-body" style="font-size:14px;line-height:2;color:var(--text)">${l.rulesText}</div></div>`;
+}
+
+// ══ تنظیمات ══
+function buildSettings(){
+  const w=CFG.wins;
+  // استیکر فعلی
+  const setCurEmj=document.getElementById('set-cur-emj');
+  const setCurName=document.getElementById('set-cur-name');
+  const setCurWins=document.getElementById('set-cur-wins');
+  if(setCurEmj)setCurEmj.textContent=CFG.emoji;
+  if(setCurName)setCurName.textContent=MY_NAME;
+  if(setCurWins)setCurWins.textContent=w+' '+L().winsUnit;
+  const sw=document.getElementById('set-w');
+  const sl=document.getElementById('set-l');
+  const st=document.getElementById('set-t');
+  if(sw)sw.textContent=w;
+  if(sl)sl.textContent=CFG.losses;
+  if(st)st.textContent=w+CFG.losses;
+  CFG.tempEmoji=CFG.emoji;CFG.tempBg=CFG.bg;
+  // گرید استیکر
+  const g=document.getElementById('emoji-grid');
+  if(g)g.innerHTML=STICKERS.map(({e,minW,lbl})=>{
+    const ok=w>=minW,active=e===CFG.tempEmoji;
+    return `<button class="ebtn${active?' active':''}${!ok?' locked':''}" title="${ok?lbl:'🔒 '+minW+' '+L().winsUnit}"
+      onclick="${ok?`pickEmoji('${e}')`:`toast('${e}: '+${minW}+' '+L().winsUnit)`}">
+      ${e}${!ok?'<span class="elockbadge">🔒</span>':''}
+    </button>`;
+  }).join('');
+  // پیشرفت
+  const pp=document.getElementById('wprog');
+  if(pp){
+    const next=STICKERS.find(s=>s.minW>w);
+    if(next){const pct=Math.min(100,Math.round(w/next.minW*100));
+      pp.innerHTML=`<div class="wprog-txt">${L().nextStk} ${next.e} ${L().stkNeed} <b style="color:var(--gold)">${next.minW}</b> ${L().stkWins}</div>
+      <div class="wbar"><div class="wfill" style="width:${pct}%"></div></div>`;}
+    else pp.innerHTML=`<div class="wprog-txt">${L().proPlayer}</div>`;
+  }
+  // پس‌زمینه
+  const bg=document.getElementById('bg-grid');
+  if(bg)bg.innerHTML=BGS.map(b=>`
+    <div class="bg-opt${b.id===CFG.tempBg.id?' sel':''}" onclick="pickBg('${b.id}')" title="${b.lbl}"
+      style="background:${b.room}">
+      <div class="bg-felt" style="background:${b.felt};border-color:${b.brd}"></div>
+    </div>`).join('');
+}
+
+function pickEmoji(e){
+  CFG.tempEmoji=e;
+  const setCurEmj=document.getElementById('set-cur-emj');
+  if(setCurEmj)setCurEmj.textContent=e;
+  document.querySelectorAll('.ebtn').forEach(b=>b.classList.toggle('active',b.textContent.trim().startsWith(e)&&!b.querySelector('.elockbadge')));
+}
+function pickBg(id){
+  CFG.tempBg=BGS.find(b=>b.id===id)||BGS[0];
+  document.querySelectorAll('.bg-opt').forEach((el,i)=>el.classList.toggle('sel',BGS[i]?.id===id));
+}
+function saveSettings(){CFG.emoji=CFG.tempEmoji;CFG.bg=CFG.tempBg;saveCFGLocal();toast(L().setSave);go('menu');}
+
+// ══ رنکینگ ══
+async function loadRank(){
+  const rmeEmj=document.getElementById('rme-emj');
+  const rmeNm=document.getElementById('rme-nm');
+  const rmeW=document.getElementById('rme-w');
+  if(rmeEmj)rmeEmj.textContent=CFG.emoji;
+  if(rmeNm)rmeNm.textContent=MY_NAME;
+  if(rmeW)rmeW.textContent=CFG.wins;
+  const list=document.getElementById('rank-list');
+  if(list)list.innerHTML=`<div class="rloading">${L().rankLoading}</div>`;
+  const data=await binGet();
+  if(!data||!data.players||!data.players.length){
+    if(list)list.innerHTML=`<div class="rloading">${L().rankEmpty}</div>`;return;
+  }
+  const sorted=[...data.players].sort((a,b)=>b.wins-a.wins);
+  const myPos=sorted.findIndex(p=>p.id==MY_ID);
+  const rmePos=document.getElementById('rme-pos');
+  if(rmePos)rmePos.textContent=myPos<0?'—':myPos===0?'🥇':myPos===1?'🥈':myPos===2?'🥉':'#'+(myPos+1);
+  const badge=w=>w>=100?'👑':w>=80?'💎':w>=60?'🐉':w>=40?'🦸':w>=20?'⭐':'';
+  if(list)list.innerHTML=sorted.slice(0,30).map((p,i)=>{
+    const isMe=p.id==MY_ID,pos=i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1,cls=i===0?'rp1':i===1?'rp2':i===2?'rp3':'';
+    return `<div class="rank-item${isMe?' mei':''}">
+      <div class="rpos ${cls}">${pos}</div><div class="remj">${p.emoji||'🧑'}</div>
+      <div class="rinfo"><div class="rnm">${p.name||'—'}${isMe?' ('+MY_NAME+')':''}</div>
+      <div class="rwins">${p.wins} ${L().winsUnit} · ${p.losses||0} loss</div></div>
+      <div class="rbadge">${badge(p.wins)}</div></div>`;
+  }).join('');
+}
+
+// ══ بازی ══
+const SUITS=['♠','♥','♦','♣'];
+const RANKS=['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+const RV=Object.fromEntries(RANKS.map((r,i)=>[r,i]));
+const REDS=new Set(['♥','♦']);
+let G={};
+
+function shuf(a){
+  a=[...a];
+  for(let p=0;p<5;p++)for(let i=a.length-1;i>0;i--){const j=0|Math.random()*(i+1);[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+
+function sortH(h,trump){
+  return [...h].sort((a,b)=>{
+    const sa=a.s===trump?-1:SUITS.indexOf(a.s),sb=b.s===trump?-1:SUITS.indexOf(b.s);
+    if(sa!==sb)return sa-sb;return RV[b.r]-RV[a.r];
+  });
+}
+function validC(hand,lead,trump){
+  if(!lead)return hand;const f=hand.filter(c=>c.s===lead);return f.length?f:hand;
+}
+function trickWin(trick,trump){
+  // بالاترین حکم برنده است، اگر حکم نبود بالاترین کارت از خال لید
+  const leadSuit=trick[0].card.s;
+  let bestPi=-1, bestVal=-1, hasTrump=false;
+
+  for(const{pi,card}of trick){
+    const isTrump=card.s===trump;
+    const val=RV[card.r]; // مقایسه عددی: A=12، K=11، ...، 2=0
+
+    if(bestPi===-1){
+      // اولین کارت
+      bestPi=pi; bestVal=val; hasTrump=isTrump;
+      continue;
+    }
+
+    if(isTrump && !hasTrump){
+      // اولین حکم — برنده میشه
+      bestPi=pi; bestVal=val; hasTrump=true;
+    } else if(isTrump && hasTrump && val>bestVal){
+      // حکم قوی‌تر
+      bestPi=pi; bestVal=val;
+    } else if(!isTrump && !hasTrump && card.s===leadSuit && val>bestVal){
+      // کارت از خال لید که از بهترین قبلی قوی‌تره
+      bestPi=pi; bestVal=val;
+    }
+    // اگه حکم نزد و خال لید هم نیست → رد کرده، برنده نمیشه
+  }
+  return bestPi;
+}
+
+function findHakem(players){
+  // انتخاب حاکم اول کاملاً رندوم
+  return Math.floor(Math.random()*players.length);
+}
+
+// AI پیشرفته طبق الگوریتم کامل
+function aiPlay(hand, trick, trump, teamIdx, allPlayers){
+  const lead = trick.length ? trick[0].card.s : null;
+  const valid = validC(hand, lead, trump);
+
+  // ── شروع شاخ (لید) ──
+  if(!lead){
+    // آس بزن
+    const aces = hand.filter(c=>c.r==='A');
+    if(aces.length) return aces[0];
+    // شاه از رنگ پرتعداد
+    const bySuit = {};
+    hand.forEach(c=>{(bySuit[c.s]=bySuit[c.s]||[]).push(c);});
+    const kings = hand.filter(c=>c.r==='K');
+    if(kings.length){
+      const bk = kings.sort((a,b)=>(bySuit[b.s]?.length||0)-(bySuit[a.s]?.length||0))[0];
+      if((bySuit[bk.s]?.length||0)>=3) return bk;
+    }
+    // حکم زیاد → بزن تا از حریف بکشی
+    const trumps = hand.filter(c=>c.s===trump);
+    if(trumps.length>=4){
+      const maxT = trumps.reduce((a,b)=>RV[a.r]>RV[b.r]?a:b);
+      if(RV[maxT.r]>=RV['Q']&&Math.random()<.5) return maxT;
+    }
+    // پرتعدادترین رنگ غیرحکم
+    const nonT = Object.entries(bySuit).filter(([s])=>s!==trump).sort((a,b)=>b[1].length-a[1].length);
+    if(nonT.length) return nonT[0][1].reduce((a,b)=>RV[a.r]>RV[b.r]?a:b);
+    return trumps.reduce((a,b)=>RV[a.r]>RV[b.r]?a:b);
+  }
+
+  // ── وسط شاخ ──
+  // آیا هم‌تیمی داره می‌بره؟
+  const curWin = trickWin(trick, trump);
+  const curWinTeam = allPlayers[curWin]?.team;
+  const partnerWinning = (curWinTeam === teamIdx) && allPlayers.length===4;
+
+  // ── اگه از خال لید داریم ──
+  if(valid.every(c=>c.s===lead)){
+    if(partnerWinning){
+      // شریک داره می‌بره → کمترین کارت
+      return valid.reduce((a,b)=>RV[a.r]<RV[b.r]?a:b);
+    }
+    // سعی کن ببری با کمترین کارت ممکن
+    const canWin = valid.filter(c=>trickWin([...trick,{pi:99,card:c}],trump)===99);
+    if(canWin.length) return canWin.reduce((a,b)=>RV[a.r]<RV[b.r]?a:b);
+    // نمیتونی ببری → کمترین کارت
+    return valid.reduce((a,b)=>RV[a.r]<RV[b.r]?a:b);
+  }
+
+  // ── خال لید نداریم ──
+  const trumpsInHand = hand.filter(c=>c.s===trump);
+  const nonTrumps = hand.filter(c=>c.s!==trump);
+
+  // اگه شریک داره می‌بره → حکم نزن، کارت بی‌ارزش رد کن
+  if(partnerWinning){
+    if(nonTrumps.length) return nonTrumps.reduce((a,b)=>RV[a.r]<RV[b.r]?a:b);
+    return trumpsInHand.reduce((a,b)=>RV[a.r]<RV[b.r]?a:b);
+  }
+
+  // آیا باید حکم بزنیم؟
+  if(trumpsInHand.length){
+    // کمترین حکمی که می‌بره
+    const canWinWithTrump = trumpsInHand.filter(c=>trickWin([...trick,{pi:99,card:c}],trump)===99);
+    if(canWinWithTrump.length){
+      // احتمال overtrump: اگه بازیکنان بعدی هنوز بازی نکردن شاید حکم بالاتر بزنن
+      const playersLeft = allPlayers.length - trick.length - 1;
+      if(playersLeft>0 && canWinWithTrump[0] && RV[canWinWithTrump.reduce((a,b)=>RV[a.r]<RV[b.r]?a:b).r]<RV['Q'] && Math.random()<.3){
+        // حکم ضعیف + بازیکن بعدی داره → شاید رد بده
+        if(nonTrumps.length) return nonTrumps.reduce((a,b)=>RV[a.r]<RV[b.r]?a:b);
+      }
+      return canWinWithTrump.reduce((a,b)=>RV[a.r]<RV[b.r]?a:b);
+    }
+    // حکم نداره که ببره → کارت بی‌ارزش رد کن
+    if(nonTrumps.length) return nonTrumps.reduce((a,b)=>RV[a.r]<RV[b.r]?a:b);
+    return trumpsInHand.reduce((a,b)=>RV[a.r]<RV[b.r]?a:b);
+  }
+
+  // اصلاً حکم نداره → بی‌ارزش‌ترین کارت رد کن
+  return valid.reduce((a,b)=>RV[a.r]<RV[b.r]?a:b);
+}
+function aiTrump(f5){
+  const sc={};f5.forEach(c=>{sc[c.s]=(sc[c.s]||0)+1+RV[c.r]*.08;});
+  return Object.entries(sc).sort((a,b)=>b[1]-a[1])[0][0];
+}
+
+// ══ شروع ══
+function startGame(mode,maxR){
+  window._lm=mode;window._lr=maxR;
+  const pool=shuf([...(LANG==='en'?EN_NAMES:FA_NAMES)]);
+  const rndE=()=>AEMJ[0|Math.random()*AEMJ.length];
+  // pi=0: من (پایین)، pi=1: روبرو=هم‌تیمی(بالا)، pi=2: چپ=حریف، pi=3: راست=حریف
+  // تیم‌بندی: 0و1 یه تیم، 2و3 تیم دیگه
+  const players=[
+    {name:MY_NAME,human:true,team:0,emoji:CFG.emoji,tricks:0,hand:[],first5:[]},
+    {name:pool[0],human:false,team:0,emoji:rndE(),tricks:0,hand:[],first5:[]}, // هم‌تیمی (بالا)
+    {name:pool[1],human:false,team:1,emoji:rndE(),tricks:0,hand:[],first5:[]}, // حریف (چپ)
+    {name:pool[2],human:false,team:1,emoji:rndE(),tricks:0,hand:[],first5:[]}, // حریف (راست)
+  ];
+  G={mode:4,maxR,players,hakemIdx:0,curTurn:0,
+     trump:null,trick:[],played:new Set(),
+     roundScore:[0,0],gameScore:[0,0],roundNum:1,state:'deal',
+     trickScoreUs:0,trickScoreThem:0,
+     trickHistory:[],  // تاریخچه همه شاخ‌ها
+     roundHistory:[]   // تاریخچه همه راندها
+  };
+  applyBg();setupUI();go('game');dealCards();
+}
+
+function applyBg(){
+  const bg=CFG.bg;
+  const gm=document.getElementById('pg-game');
+  if(gm)gm.style.background=bg.room;
+  const felt=document.getElementById('felt');
+  if(felt){felt.style.background=`radial-gradient(ellipse,${bg.felt}cc,${bg.felt}88)`;felt.style.borderColor=bg.brd;}
+}
+
+function dealCards(){
+  // توزیع واقعی حکم:
+  // ابتدا ۵ کارت به هر بازیکن (به ترتیب نفر نفر)
+  // بعد از انتخاب حکم: ۴ کارت به هر نفر، سپس ۴ کارت به هر نفر
+  const deck=shuf(SUITS.flatMap(s=>RANKS.map(r=>({s,r}))));
+
+  // ۵ کارت اول به هر بازیکن (به ترتیب دور میز)
+  const n=G.players.length;
+  G.players.forEach((p,i)=>{
+    p.first5=deck.slice(i*5,(i+1)*5);
+    p.hand=[...p.first5];
+    p.tricks=0;
+  });
+
+  // بقیه کارت‌ها برای بعد از انتخاب حکم
+  // ۴ کارت به هر نفر (دور اول) + ۴ کارت به هر نفر (دور دوم)
+  const restStart=n*5;
+  G._restCards=deck.slice(restStart); // باقی ۳۲ کارت
+  G._deckOffset=restStart;
+
+  // فقط در راند اول، حاکم به صورت رندوم انتخاب می‌شود.
+  // از راند دوم به بعد، G.hakemIdx از قبل توسط finishRound() طبق
+  // «قانون حفظ حاکمیت» تعیین شده و نباید اینجا دوباره رندوم شود.
+  if(G.roundNum===1){
+    G.hakemIdx=findHakem(G.players);
+  }
+  G.curTurn=G.hakemIdx;
+  G.trickScoreUs=0;G.trickScoreThem=0;
+  G.trickHistory=[];
+  setupUI();renderHand();
+  setTimeout(doHokm,400);
+}
+
+function dealRest(){
+  // بعد از انتخاب حکم، ۴+۴ کارت به هر نفر
+  const n=G.players.length;
+  const perRound=4; // هر دور چند کارت
+  const rounds=2;   // ۲ دور ۴تایی
+
+  // توزیع ۴تا ۴تا به ترتیب دور میز
+  let idx=0;
+  for(let r=0;r<rounds;r++){
+    for(let pi=0;pi<n;pi++){
+      const cards=G._restCards.slice(idx,idx+perRound);
+      G.players[pi].hand=[...G.players[pi].hand,...cards];
+      idx+=perRound;
+    }
+  }
+
+  // sort دست هر بازیکن بر اساس حکم
+  G.players.forEach(p=>{p.hand=sortH(p.hand,G.trump);});
+}
+
+// ══ UI ══
+function setupUI(){
+  const psl2=document.getElementById('psl2');
+  const psl3=document.getElementById('psl3');
+  if(psl2)psl2.style.display='flex';
+  if(psl3)psl3.style.display='flex';
+  $('gtrump','حکم: —');
+  $('sc-us',''+G.gameScore[0]);$('sc-th',''+G.gameScore[1]);$('sc-rnd',''+G.roundNum);
+  renderTricks();updateBoxes();renderTzone();
+}
+
+function updateBoxes(){
+  const p=G.players,t=G.curTurn;
+  const set=(pi,sl)=>{
+    if(!p[pi])return;
+    $(  `pe${sl}`,p[pi].emoji);$(`pn${sl}`,p[pi].name);
+    $(`pc${sl}`,'🂠 '+p[pi].hand.length);
+    $(`pt${sl}`,t===pi?'← ':'' );
+    const box=document.getElementById(`pb${sl}`);
+    if(!box)return;
+    box.className='pbox'+(t===pi?' my-turn':'')+(G.hakemIdx===pi?' hakem-box':'');
+    let tb=box.querySelector('.pteam');
+    if(!tb){tb=document.createElement('div');box.appendChild(tb);}
+    tb.className='pteam '+(pi===1?'tu':'tt');
+    tb.textContent=pi===1?L().teamUs:L().teamThem;
+  };
+  set(1,1);set(2,2);set(3,3);
+  $('sc-us',''+G.gameScore[0]);$('sc-th',''+G.gameScore[1]);$('sc-rnd',''+G.roundNum);
+}
+
+function renderTricks(){
+  const us=document.getElementById('tricks-us');
+  const them=document.getElementById('tricks-them');
+  if(!us||!them)return;
+  const max=7;
+  us.innerHTML=Array.from({length:max},(_,i)=>`<div class="trick-dot${i<G.trickScoreUs?' won-us':''}"></div>`).join('');
+  them.innerHTML=Array.from({length:max},(_,i)=>`<div class="trick-dot${i<G.trickScoreThem?' won-them':''}"></div>`).join('');
+}
+
+function renderTzone(){
+  const zone=document.getElementById('tzone');
+  if(!zone)return;zone.innerHTML='';
+  if(!G.trick||!G.trick.length)return;
+  const POS={
+    0:'tcwrap tcwrap-me',
+    1:'tcwrap tcwrap-top',
+    2:'tcwrap tcwrap-left',
+    3:'tcwrap tcwrap-right',
+  };
+  G.trick.forEach(({pi,card})=>{
+    const red=REDS.has(card.s);
+    const wrap=document.createElement('div');
+    wrap.className=POS[pi]||'tcwrap tcwrap-me';
+    wrap.innerHTML=`<div class="tcard ${red?'rc':'bc'}">
+      <div class="tcr">${card.r}</div><div class="tcs">${card.s}</div>
+    </div><div class="tcnm">${G.players[pi]?.name.substring(0,5)||''}</div>`;
+    zone.appendChild(wrap);
+  });
+}
+
+// ══ دست ══
+function renderHand(){
+  const cont=document.getElementById('hrow');if(!cont)return;cont.innerHTML='';
+  const me=G.players[0];if(!me||!me.hand.length)return;
+  const lead=G.trick.length?G.trick[0].card.s:null;
+  const okSet=new Set(validC(me.hand,lead,G.trump).map(c=>c.s+c.r));
+  const n=me.hand.length,isMyTurn=G.curTurn===0&&G.state==='play';
+  const vw=window.innerWidth,cw=47,avail=vw-16;
+  const ov=n>1?Math.max(0,Math.ceil((n*cw-avail)/(n-1))):0;
+  me.hand.forEach((card,i)=>{
+    const red=REDS.has(card.s),ok=okSet.has(card.s+card.r);
+    const mid=(n-1)/2,ang=(i-mid)*1.7,yO=Math.pow(Math.abs(i-mid),.7)*1.5;
+    const d=document.createElement('div');
+    d.className=`card ${red?'red':'blk'}${ok&&isMyTurn?' play':' dis'}`;
+    d.style.cssText=`transform:rotate(${ang}deg) translateY(${yO}px);z-index:${i+1};margin-right:-${ov}px;`;
+    d.innerHTML=`<div class="cr">${card.r}</div><div class="cs">${card.s}</div>`;
+    if(ok&&isMyTurn){const idx=i;d.addEventListener('click',()=>{if(G.state==='play'&&G.curTurn===0)playCard(0,idx);});}
+    cont.appendChild(d);
+  });
+  if(cont.lastChild)cont.lastChild.style.marginRight='0';
+  const lbl=document.getElementById('hlbl');
+  if(lbl){lbl.textContent=isMyTurn?L().handTurn:L().handLbl;lbl.className='hlbl'+(isMyTurn?' act':'');}
+}
+
+// ══ حکم ══
+function doHokm(){
+  const hk=G.players[G.hakemIdx];G.state='hokm';
+  const isHuman=hk.human;
+  const t=isHuman?L().hakemYou:hk.name+' '+L().hakemIs;
+  const b=isHuman?L().hakemChoose:L().hakemChoosing;
+  showMsg(t,b);
+  if(isHuman){
+    const tb=document.getElementById('tbtns');if(tb)tb.classList.add('on');
+    const sv=document.getElementById('sover');if(sv)sv.classList.add('act');
+  } else {
+    const tb=document.getElementById('tbtns');if(tb)tb.classList.remove('on');
+    setTimeout(()=>setTrump(aiTrump(hk.first5)),1400);
+  }
+}
+
+function pickTrump(s){const tb=document.getElementById('tbtns');if(tb)tb.classList.remove('on');setTrump(s);}
+
+function setTrump(s){
+  G.trump=s;dealRest();
+  $('gtrump','حکم: '+s);
+  showMsg(L().trumpSet,L().gameStart);
+  setTimeout(()=>{hideMsg();G.state='play';G.curTurn=G.hakemIdx;renderHand();updateBoxes();if(!G.players[G.curTurn].human)schedAI();},900);
+}
+
+// ══ بازی ══
+function playCard(pi,ci){
+  if(G.state!=='play'||G.curTurn!==pi)return;
+  const p=G.players[pi];
+  const lead=G.trick.length?G.trick[0].card.s:null;
+  const valid=validC(p.hand,lead,G.trump);
+  const card=p.hand[ci];
+  if(!card||!valid.find(c=>c.s===card.s&&c.r===card.r)){toast(L().invalid);return;}
+  p.hand.splice(ci,1);G.trick.push({pi,card});G.played.add(card.s+card.r);
+  renderHand();renderTzone();updateBoxes();
+  saveGame(); // ذخیره بازی
+  if(G.trick.length===G.players.length){setTimeout(finishTrick,800);}
+  else{
+    // ترتیب پادساعتگرد: من(0)→راست(3)→بالا(1)→چپ(2)→من(0)
+    const CCW={0:3, 3:1, 1:2, 2:0};
+    G.curTurn = CCW[G.curTurn];
+    renderHand();updateBoxes();
+    if(!G.players[G.curTurn].human)schedAI();
+  }
+}
+
+function schedAI(d=950){
+  setTimeout(()=>{
+    if(G.state!=='play')return;
+    const p=G.players[G.curTurn];if(p.human)return;
+    const card=aiPlay(p.hand, G.trick, G.trump, p.team, G.players);
+    const idx=p.hand.findIndex(c=>c.s===card.s&&c.r===card.r);
+    if(idx>=0)playCard(G.curTurn,idx);
+  },d);
+}
+
+function finishTrick(){
+  const wi=trickWin(G.trick,G.trump);
+  const wp=G.players[wi];
+  wp.tricks++;G.roundScore[wp.team]++;
+  if(wp.team===0)G.trickScoreUs++;else G.trickScoreThem++;
+  renderTricks();
+
+  // ذخیره تاریخچه شاخ
+  G.trickHistory.push({
+    trickNum: G.trickHistory.length+1,
+    cards: G.trick.map(({pi,card})=>({
+      pi, name:G.players[pi].name, emoji:G.players[pi].emoji,
+      card, team:G.players[pi].team
+    })),
+    winnerPi: wi,
+    winnerName: wp.name,
+    winnerTeam: wp.team,
+    trump: G.trump,
+    scoreUs: G.roundScore[0],
+    scoreThem: G.roundScore[1]
+  });
+
+  G.trick=[];G.curTurn=wi;
+  const isMyTeam=wp.team===0;
+  toast(isMyTeam?L().trickWonUs:L().trickWonThem);
+  if(G.roundScore[0]>=7||G.roundScore[1]>=7){
+    setTimeout(()=>{renderTzone();updateBoxes();finishRound();},700);return;
+  }
+  setTimeout(()=>{
+    renderTzone();updateBoxes();
+    if(!G.players[0].hand.length){finishRound();return;}
+    renderHand();if(!G.players[G.curTurn].human)schedAI(950);
+  },600);
+}
+
+function finishRound(){
+  const rs=G.roundScore,ht=G.players[G.hakemIdx].team,ot=1-ht;
+
+  // تعیین برنده راند قبل از محاسبه pts
+  // تیم حاکم برد؟ — هر تیمی شاخ بیشتر داره یا ۷ شاخ رسیده
+  const hakemRoundScore=rs[ht];
+  const oppRoundScore=rs[ot];
+  const hakemTeamWon = hakemRoundScore >= 7 || (hakemRoundScore > oppRoundScore && oppRoundScore < 7);
+  const currentHakemIdx = G.hakemIdx;
+
+  let pts=[0,0],msg='';
+  if(rs[ht]>=7){
+    if(rs[ot]===0){
+      pts[ht]=2;
+      msg=ht===0?L().korUs:L().korThem;
+    } else {
+      pts[ht]=1;
+      msg=`${ht===0?L().roundWonUs:L().roundWonThem} (${rs[ht]}-${rs[ot]})`;
+    }
+  } else if(rs[ot]>=7){
+    if(rs[ht]===0){
+      pts[ot]=3;
+      msg=ot===0?L().hkUs:L().hkThem;
+    } else {
+      pts[ot]=1;
+      msg=`${ot===0?L().roundWonUs:L().roundWonThem} (${rs[ot]}-${rs[ht]})`;
+    }
+  } else {
+    const w=rs[0]>rs[1]?0:1;
+    pts[w]=1;
+    msg=`${w===0?L().roundWonUs:L().roundWonThem} (${rs[w]}-${rs[1-w]})`;
+  }
+  G.gameScore[0]+=pts[0];G.gameScore[1]+=pts[1];
+
+  // ذخیره تاریخچه راند
+  const roundSnap = {
+    roundNum: G.roundNum,
+    trump: G.trump,
+    tricks: [...G.trickHistory.slice(-(G.roundScore[0]+G.roundScore[1]))],
+    scoreUs: G.roundScore[0],
+    scoreThem: G.roundScore[1],
+    gameScoreUs: G.gameScore[0],
+    gameScoreThem: G.gameScore[1],
+    result: msg
+  };
+  G.roundHistory.push(roundSnap);
+  G._lastRoundTricks=[...G.trickHistory.slice(-(G.roundScore[0]+G.roundScore[1]))];
+
+  // نشون بده نتیجه + دکمه مشاهده تاریخچه
+  showRoundResult(msg, ()=>{
+    if(G.roundNum>=G.maxR||Math.max(...G.gameScore)>=G.maxR){endGame();return;}
+
+    // قانون حاکم:
+    // تیم حاکم برد → همان حاکم (currentHakemIdx) میماند
+    // تیم حاکم باخت → حاکم پادساعتگرد به نفر بعدی منتقل میشود
+    if(hakemTeamWon){
+      G.hakemIdx=currentHakemIdx; // همان حاکم میماند
+    } else {
+      // ترتیب چرخش حاکم طبق نمودار: ۱→۲→۳→۴→۱
+      // pi=0(من/۱) → pi=3(حریف‌راست/۲) → pi=1(هم‌تیمی/۳) → pi=2(حریف‌چپ/۴) → pi=0
+      const NEXT={0:3, 3:1, 1:2, 2:0};
+      G.hakemIdx=NEXT[currentHakemIdx]??0;
+    }
+
+    G.roundScore=[0,0];G.roundNum++;G.trick=[];G.played=new Set();G.trump=null;G.state='deal';
+    G.trickScoreUs=0;G.trickScoreThem=0;
+    clearSavedGame();
+    $('gtrump','حکم: —');
+    dealCards();
+  });
+}
+
+async function endGame(){
+  clearSavedGame();
+  const won=G.gameScore[0]>G.gameScore[1];
+  if(won)CFG.wins++;else CFG.losses++;
+  saveCFGLocal();updateRank(won).catch(()=>{});
+  const emj=document.getElementById('end-emj');
+  const ttl=document.getElementById('end-ttl');
+  const sc=document.getElementById('end-sc');
+  if(emj)emj.textContent=won?'🏆':'😔';
+  if(ttl)ttl.textContent=won?L().won:L().lost;
+  const bonusWins=[3,5,8,10,12,15,18,20,22,25,28,30,35,40,45,50,55,60,70,80,90,100];
+  const bonus=won&&bonusWins.includes(CFG.wins)?`<div style="color:var(--gold);font-size:14px;margin-top:8px">${L().newSticker}</div>`:'';
+  if(sc)sc.innerHTML=`<div class="end-sr">${won?L().scUs:L().scTh}: <span>${G.gameScore[won?0:1]}</span> · ${won?L().scTh:L().scUs}: <span>${G.gameScore[won?1:0]}</span></div>
+    <div class="end-sr">${L().totalWins} <span>${CFG.wins}</span></div>${bonus}`;
+  go('end');
+}
+
+// ══ نتیجه راند + تاریخچه ══
+let _roundCb=null;
+
+function showRoundResult(msg, cb){
+  _roundCb=cb;
+  // ساخت overlay نتیجه راند
+  let ov=document.getElementById('round-result-ov');
+  if(!ov){
+    ov=document.createElement('div');
+    ov.id='round-result-ov';
+    ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;';
+    document.body.appendChild(ov);
+  }
+  ov.style.display='flex';
+  ov.innerHTML=`
+    <div style="background:#1c1510;border:1px solid rgba(201,168,76,.4);border-radius:20px;padding:24px 28px;text-align:center;max-width:85vw;width:320px;">
+      <div style="font-size:22px;font-weight:700;color:var(--gold);margin-bottom:8px;">${msg}</div>
+      <div style="font-size:15px;color:var(--dim);margin-bottom:20px;">امتیاز: ما ${G.gameScore[0]} — حریف ${G.gameScore[1]}</div>
+      <div style="display:flex;gap:10px;">
+        <button onclick="openHistory()" style="flex:1;font-family:inherit;background:rgba(201,168,76,.12);color:var(--gold);border:1.5px solid rgba(201,168,76,.3);border-radius:12px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;">
+          📋 مشاهده کارت‌ها
+        </button>
+        <button onclick="continueGame()" style="flex:1;font-family:inherit;background:linear-gradient(135deg,var(--gold3),var(--gold));color:#1a0800;border:none;border-radius:12px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;">
+          ▶ ادامه
+        </button>
+      </div>
+    </div>`;
+}
+
+function continueGame(){
+  const ov=document.getElementById('round-result-ov');
+  if(ov)ov.style.display='none';
+  if(_roundCb){const cb=_roundCb;_roundCb=null;cb();}
+}
+
+function openHistory(){
+  const tricks=G._lastRoundTricks||[];
+  const body=document.getElementById('hist-body');
+  if(!body)return;
+
+  body.innerHTML=tricks.map((t,i)=>{
+    const winTeam=t.winnerTeam===0;
+    const winColor=winTeam?'#27ae60':'#c0392b';
+    const winLabel=winTeam?(LANG==='en'?'Your Team':'تیم شما'):(LANG==='en'?'Opponent':'تیم حریف');
+    const cards=t.cards.map(c=>{
+      const red=['♥','♦'].includes(c.card.s);
+      const isWinner=c.pi===t.winnerPi;
+      return `<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:${isWinner?'rgba(201,168,76,.12)':'rgba(255,255,255,.03)'};border-radius:8px;border:1px solid ${isWinner?'rgba(201,168,76,.3)':'rgba(255,255,255,.06)'};">
+        <span style="font-size:20px">${c.emoji}</span>
+        <span style="font-size:13px;color:var(--gold);flex:1">${c.name}</span>
+        <span style="font-size:18px;font-weight:800;color:${red?'#e74c3c':'#1a1a2e'};background:#fffef8;padding:3px 7px;border-radius:6px;">${c.card.r}${c.card.s}</span>
+        ${isWinner?'<span style="font-size:16px">🏆</span>':''}
+      </div>`;
+    }).join('');
+
+    return `<div style="background:var(--dark3);border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:hidden;">
+      <div style="padding:10px 14px;background:rgba(0,0,0,.3);display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:14px;font-weight:700;color:var(--gold)">${LANG==='en'?'Trick':'شاخ'} ${t.trickNum}</span>
+        <span style="font-size:13px;font-weight:700;color:${winColor}">🏆 ${winLabel}</span>
+        <span style="font-size:12px;color:var(--dim)">${t.scoreUs}-${t.scoreThem}</span>
+      </div>
+      <div style="padding:10px;display:flex;flex-direction:column;gap:6px;">${cards}</div>
+    </div>`;
+  }).join('');
+
+  document.querySelectorAll('.pg,.pg-scroll').forEach(p=>p.classList.remove('on'));
+  document.getElementById('pg-history').classList.add('on');
+}
+
+function closeHistory(){
+  document.getElementById('pg-history').classList.remove('on');
+  document.getElementById('pg-game').classList.add('on');
+}
+
+function askLeave(){
+  const dlg=document.getElementById('leave-dialog');
+  if(dlg)dlg.classList.add('on');
+}
+function closeLeaveDialog(){
+  const dlg=document.getElementById('leave-dialog');
+  if(dlg)dlg.classList.remove('on');
+}
+function confirmLeave(){
+  closeLeaveDialog();G.state='stopped';hideMsg();go('menu');
+}
+
+function showMsg(t,b){
+  const m=document.getElementById('smsg');
+  const mt=document.getElementById('smsgt');
+  const mb=document.getElementById('smsgb');
+  const sv=document.getElementById('sover');
+  if(mt)mt.textContent=t;if(mb)mb.textContent=b||'';
+  if(m)m.classList.add('on');if(sv)sv.classList.add('act');
+}
+function hideMsg(){
+  const m=document.getElementById('smsg');
+  const tb=document.getElementById('tbtns');
+  const sv=document.getElementById('sover');
+  if(m)m.classList.remove('on');if(tb)tb.classList.remove('on');if(sv)sv.classList.remove('act');
+}
+function toast(msg,dur=2500){
+  document.querySelectorAll('.toast').forEach(x=>x.remove());
+  const d=document.createElement('div');d.className='toast';d.textContent=msg;
+  document.body.appendChild(d);setTimeout(()=>d.remove(),dur+400);
+}
+
+// ══ init ══
+// ══ ذخیره و بازیابی بازی ══
+function saveGame(){
+  if(!G||!G.state||G.state==='stopped')return;
+  try{
+    const save={
+      mode:G.mode,maxR:G.maxR,
+      players:G.players.map(p=>({
+        name:p.name,human:p.human,team:p.team,emoji:p.emoji,
+        tricks:p.tricks,hand:p.hand,first5:p.first5
+      })),
+      hakemIdx:G.hakemIdx,curTurn:G.curTurn,
+      trump:G.trump,trick:G.trick,
+      playedArr:[...G.played],  // Set → Array
+      roundScore:G.roundScore,gameScore:G.gameScore,
+      roundNum:G.roundNum,state:G.state,
+      trickScoreUs:G.trickScoreUs,trickScoreThem:G.trickScoreThem,
+      trickHistory:G.trickHistory,
+      savedAt:Date.now()
+    };
+    localStorage.setItem('hokm_saved_game',JSON.stringify(save));
+  }catch(e){}
+}
+
+function clearSavedGame(){
+  localStorage.removeItem('hokm_saved_game');
+}
+
+function checkSavedGame(){
+  try{
+    const raw=localStorage.getItem('hokm_saved_game');
+    if(!raw){go('menu');return;}
+    const save=JSON.parse(raw);
+    if(!save||!save.state){go('menu');return;}
+    // بیشتر از ۲۴ ساعت گذشته؟
+    if(Date.now()-save.savedAt>86400000){clearSavedGame();go('menu');return;}
+    // بازی‌های ذخیره‌شده با حالت ۲ نفره دیگر پشتیبانی نمی‌شوند
+    if(save.mode!==4||!save.players||save.players.length!==4){clearSavedGame();go('menu');return;}
+    showResumeDialog(save);
+  }catch(e){go('menu');}
+}
+
+function showResumeDialog(save){
+  let ov=document.getElementById('resume-ov');
+  if(!ov){
+    ov=document.createElement('div');
+    ov.id='resume-ov';
+    ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:60;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;';
+    document.body.appendChild(ov);
+  }
+  const modeText=LANG==='en'?'4 Players':'۴ نفره';
+  const title=LANG==='en'?'Continue Previous Game?':'ادامه بازی قبلی؟';
+  const body=LANG==='en'
+    ?`Round ${save.roundNum} · Your team: ${save.gameScore[0]} · Opponent: ${save.gameScore[1]}`
+    :`راند ${save.roundNum} · تیم شما: ${save.gameScore[0]} · حریف: ${save.gameScore[1]}`;
+  ov.innerHTML=`
+    <div style="background:#1c1510;border:1px solid rgba(201,168,76,.4);border-radius:20px;padding:26px 24px;max-width:85vw;width:320px;text-align:center;">
+      <div style="font-size:40px;margin-bottom:12px">🎴</div>
+      <div style="font-size:20px;font-weight:700;color:var(--gold);margin-bottom:8px">${title}</div>
+      <div style="font-size:14px;color:var(--dim);margin-bottom:20px">${modeText} · ${body}</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <button onclick="resumeGame()" style="font-family:inherit;background:linear-gradient(135deg,var(--gold3),var(--gold));color:#1a0800;border:none;border-radius:12px;padding:14px;font-size:16px;font-weight:700;cursor:pointer;">
+          ▶ ${LANG==='en'?'Continue Game':'ادامه بازی'}
+        </button>
+        <button onclick="newGameFromResume()" style="font-family:inherit;background:rgba(201,168,76,.08);color:var(--gold);border:1.5px solid rgba(201,168,76,.25);border-radius:12px;padding:12px;font-size:15px;font-weight:600;cursor:pointer;">
+          🎮 ${LANG==='en'?'New Game':'بازی جدید'}
+        </button>
+        <button onclick="mainMenuFromResume()" style="font-family:inherit;background:transparent;color:var(--dim);border:none;border-radius:12px;padding:10px;font-size:14px;cursor:pointer;">
+          🏠 ${LANG==='en'?'Main Menu':'منوی اصلی'}
+        </button>
+      </div>
+    </div>`;
+  document.getElementById('pg-menu').classList.add('on');
+}
+
+function closeResumeDialog(){
+  const ov=document.getElementById('resume-ov');
+  if(ov)ov.remove();
+}
+
+function resumeGame(){
+  closeResumeDialog();
+  try{
+    const raw=localStorage.getItem('hokm_saved_game');
+    if(!raw)return;
+    const save=JSON.parse(raw);
+    G={
+      mode:save.mode,maxR:save.maxR,
+      players:save.players,
+      hakemIdx:save.hakemIdx,curTurn:save.curTurn,
+      trump:save.trump,trick:save.trick||[],
+      played:new Set(save.playedArr||[]),
+      roundScore:save.roundScore,gameScore:save.gameScore,
+      roundNum:save.roundNum,state:save.state,
+      trickScoreUs:save.trickScoreUs||0,
+      trickScoreThem:save.trickScoreThem||0,
+      trickHistory:save.trickHistory||[],
+      roundHistory:[],_lastRoundTricks:[]
+    };
+    applyBg();setupUI();go('game');
+    renderHand();updateBoxes();renderTzone();renderTricks();
+    // setupUI() نمایش حکم را به '—' ریست می‌کند؛ اگه حکم قبلاً انتخاب شده، دوباره نشونش بده
+    if(G.trump){$('gtrump','حکم: '+G.trump);}
+
+    // اگه شاخ کامل شده ولی هنوز پردازش نشده
+    if(G.trick.length===G.players.length){
+      setTimeout(finishTrick,800);
+      return;
+    }
+    // اگه وسط شاخ هستیم
+    if(G.state==='play'){
+      if(!G.players[G.curTurn].human){
+        schedAI(1200);
+      }
+      // اگه نوبت منه، فقط hand رو رندر کن
+      renderHand();
+    } else if(G.state==='hokm'){
+      doHokm();
+    }
+    toast(LANG==='en'?'Game restored ✅':'بازی بازیابی شد ✅');
+  }catch(e){clearSavedGame();go('menu');}
+}
+
+function newGameFromResume(){closeResumeDialog();clearSavedGame();go('sel');}
+function mainMenuFromResume(){closeResumeDialog();clearSavedGame();go('menu');}
+
+loadCFG();
+setTimeout(()=>{
+  const l=document.getElementById('pg-load');
+  if(l){l.style.transition='opacity .5s';l.style.opacity='0';
+    setTimeout(()=>{if(l)l.style.display='none';
+      // فقط اولین بار زبان بپرس
+      if(!LANG){go('lang');}
+      else{
+        applyLang();
+        // چک کن بازی ذخیره شده داریم؟
+        checkSavedGame();
+      }
+    },500);}
+},2300);
+</script>
+</body>
+</html>
